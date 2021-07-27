@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import time
 import math
+import os
 
 st.set_page_config(
     page_title="Self Driving Car ND", # String or None. Strings get appended with "• Streamlit". 
@@ -26,13 +27,13 @@ except ModuleNotFoundError:
     # After Streamlit 0.65
     from streamlit.report_thread import get_report_ctx
     from streamlit.server.server import Server
-
+   
 
 def main():
     state = _get_state()
     pages = {
         "Home": project_explanation,
-        "Experiment": parameter_experiment,
+        "Parameters": parameter_experiment,
         "Hough Lines": hough_lines,
         "Extrapolate Lines": extrapolate_lines,
         "Stabilize Lines": stabilize_lines,
@@ -56,10 +57,13 @@ def main():
 
 def project_explanation(state):
     st.title("Finding Lane Lines on the Road")
-    # st.write('----')
     st.markdown("[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)")
+    st.write('----')
+    image1 = Image.open("images/image1.jpg")
+    st.image(image1, use_column_width=True)
+    
 
-    st.markdown('`Welcome to the data-driven application`')
+    st.markdown('`Welcome to the web application to detect lane lines on the road using Computer Vision.`')
     st.markdown('<p style="text-align: justify;">When we drive, we use our eyes to decide where to go. \
                  The lines on the road that show us where the lanes are act as our constant reference \
                  for where to steer the vehicle. Naturally, one of the first things we would like to do \
@@ -67,6 +71,9 @@ def project_explanation(state):
                  In this project you will detect lane lines in images using Python and OpenCV. OpenCV means \
                  "Open-Source Computer Vision", which is a package that has many useful tools for analyzing \
                  images.</p>', unsafe_allow_html=True)
+
+    image3 = Image.open("images/image5.jpg")
+    st.image(image3, use_column_width=True)
 
     col5, col6 = st.beta_columns((1,1.5))
     col5.write('----')
@@ -77,14 +84,60 @@ def project_explanation(state):
                    solution. We have included template files to be used both for the code and the writeup. \
                    The code file is called P1.ipynb and the writeup template is writeup_template.md</p>', unsafe_allow_html=True)
     col4.markdown("`Go to the Get Started page to enter details ->`")
-    img2 = Image.open("examples/laneLines_thirdPass.jpg")
-    col3.image(img2, width=250)
+    image2 = Image.open("examples/laneLines_thirdPass.jpg")
+    col3.image(image2, use_column_width=True)
 
     col7, col8 = st.beta_columns((1,1.5))
     col8.write('----')
 
+    
+
+
+
 def parameter_experiment(state):
-    st.title("parameter_experiment")
+    st.title("Experiment with parameters values")
+
+    col1, col2 = st.beta_columns(2)
+
+    # select image
+    test_images = os.listdir("test_images/")
+    state.test_image = col1.selectbox('select image', test_images)
+    root_directory = "test_images/"
+    image_path = state.test_image
+    path = os.path.join(root_directory, image_path)
+    image1 = Image.open(path)
+    col1.image(image1, use_column_width=True)
+
+    # select filter
+    filters = ['Original', 'Grayscale', 'Blur', 'Canny Edge Detection']
+    state.filter = col2.selectbox('select filter', filters, 0)
+    image1 = np.array(image1.convert('RGB'))
+    if state.filter == 'Original':
+        image2 = image1.copy()
+        col2.image(image2, use_column_width=True, caption=None, clamp = True)
+    elif state.filter == 'Grayscale':
+        image2 = cv2.cvtColor(image1, cv2.COLOR_RGB2GRAY)
+        col2.image(image2, channels='GRAY', use_column_width=True)
+    elif state.filter == 'Blur':
+        image2 = cv2.cvtColor(image1, cv2.COLOR_RGB2GRAY)
+        state.kernel_size = st.slider("Select blur level (recomemded: 5)", 1, 11, 1, 2)
+        st.text('Kernel size: {}'.format(state.kernel_size))
+        image2 = cv2.GaussianBlur(image2, (state.kernel_size, state.kernel_size), 0)
+        col2.image(image2, use_column_width=True)
+    elif state.filter == 'Canny Edge Detection':
+        image2 = cv2.cvtColor(image1, cv2.COLOR_RGB2GRAY)
+        state.kernel_size = st.slider("Select blur level (recomemded: 5)", 1, 11, 5, 2)
+        image2 = cv2.GaussianBlur(image2, (state.kernel_size, state.kernel_size), 0)
+        state.threshold_values = st.slider('Select the threshold range for canny edge \
+                                            detection: (recomended: 50, 150)', 0, 255, (60, 180))
+        low_threshold = state.threshold_values[0]
+        high_threshold = state.threshold_values[1]
+        image2 = cv2.Canny(image2, low_threshold, high_threshold)
+        col2.image(image2, use_column_width=True)
+
+
+    # st.imshow(image2)
+
 
 
 def hough_lines(state):
