@@ -27,14 +27,161 @@ except ModuleNotFoundError:
     # After Streamlit 0.65
     from streamlit.report_thread import get_report_ctx
     from streamlit.server.server import Server
-   
+
+# Helper Functions
+
+def grayscale(img):
+    """Applies the Grayscale transform
+    This will return an image with only one color channel
+    but NOTE: to see the returned image as grayscale
+    (assuming your grayscaled image is called 'gray')
+    you should call plt.imshow(gray, cmap='gray')"""
+    return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Or use BGR2GRAY if you read an image with cv2.imread()
+    # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+ 
+def canny(img, low_threshold, high_threshold):
+    """Applies the Canny transform"""
+    return cv2.Canny(img, low_threshold, high_threshold)
+
+
+def gaussian_blur(img, kernel_size):
+    """Applies a Gaussian Noise kernel"""
+    return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
+
+
+def region_of_interest(img, vertices):
+    """
+    Applies an image mask.
+    
+    Only keeps the region of the image defined by the polygon
+    formed from `vertices`. The rest of the image is set to black.
+    `vertices` should be a numpy array of integer points.
+    """
+    #defining a blank mask to start with
+    mask = np.zeros_like(img)   
+    
+    #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
+    if len(img.shape) > 2:
+        channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
+        ignore_mask_color = (255,) * channel_count
+    else:
+        ignore_mask_color = 255
+        
+    #filling pixels inside the polygon defined by "vertices" with the fill color    
+    cv2.fillPoly(mask, vertices, ignore_mask_color)
+    
+    #returning the image only where mask pixels are nonzero
+    masked_image = cv2.bitwise_and(img, mask)
+    return masked_image
+
+
+def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
+    """
+    NOTE: this is the function you might want to use as a starting point once you want to 
+    average/extrapolate the line segments you detect to map out the full
+    extent of the lane (going from the result shown in raw-lines-example.mp4
+    to that shown in P1_example.mp4).  
+    
+    Think about things like separating line segments by their 
+    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
+    line vs. the right line.  Then, you can average the position of each of 
+    the lines and extrapolate to the top and bottom of the lane.
+    
+    This function draws `lines` with `color` and `thickness`.    
+    Lines are drawn on the image inplace (mutates the image).
+    If you want to make the lines semi-transparent, think about combining
+    this function with the weighted_img() function below
+    """
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+
+
+def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
+    """
+    `img` should be the output of a Canny transform.
+        
+    Returns an image with hough lines drawn.
+    """
+    lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
+    line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
+    draw_lines(line_img, lines)
+    return line_img
+
+
+def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
+    """
+    `img` is the output of the hough_lines(), An image with lines drawn on it.
+    Should be a blank image (all black) with lines drawn on it.
+    
+    `initial_img` should be the image before any processing.
+    
+    The result image is computed as follows:
+    
+    initial_img * α + img * β + γ
+    NOTE: initial_img and img must be the same shape!
+    """
+    return cv2.addWeighted(initial_img, α, img, β, γ)
+
+
+def process_image(img):
+    """Note: The output you return should be a color image (3 channel) for processing video below."""
+    
+    global param_kernel_size
+    global param_low_threshold
+    global param_high_threshold
+    global param_rho
+    global param_theta
+    global param_threshold
+    global param_min_line_length
+    global param_max_line_gap
+    
+    # read and make a copy of the image
+    image = np.copy(img)
+    
+    # convert the image to grayscale
+    gray_image = grayscale(image)
+    
+    # Define a kernel size and apply Gaussian smoothing
+    blur_gray = gaussian_blur(gray_image, kernel_size = param_kernel_size)
+
+    # Define our parameters for Canny and apply
+    edges = canny(blur_gray, low_threshold = param_low_threshold, high_threshold = param_high_threshold)
+
+    # This time we are defining a four sided polygon to mask
+    imshape = image.shape
+    vertices = np.array([[(.55*imshape[1], .60*imshape[0]), 
+                        (.45*imshape[1], .60*imshape[0]),  
+                        (.15*imshape[1], .90*imshape[0]), 
+                        (.30*imshape[1], .90*imshape[0]), 
+                        (.50*imshape[1], .60*imshape[0]),
+                        (.70*imshape[1], .90*imshape[0]),
+                        (.85*imshape[1], .90*imshape[0]),
+                        (.55*imshape[1], .60*imshape[0])]], dtype=np.int32)
+    
+    masked_edges = region_of_interest(edges, vertices)
+
+    # draw lines using hough transform
+    line_image = hough_lines(masked_edges, rho = param_rho, theta = param_theta, threshold = param_threshold, 
+                             min_line_len = param_min_line_length, max_line_gap = param_max_line_gap)
+ 
+    # perform weighted addition of line_image and original image to potray lane markings
+    image_lanes = weighted_img(line_image, image, α=1.0, β=1.0, γ=0.)
+    result = image_lanes
+    
+    # return the final image where lines are drawn on lanes
+    return result
+
+
 
 def main():
     state = _get_state()
     pages = {
         "Home": project_explanation,
         "Parameters": parameter_experiment,
-        "Hough Lines": hough_lines,
+        "Hough Lines": hough_lines_page,
         "Extrapolate Lines": extrapolate_lines,
         "Stabilize Lines": stabilize_lines,
         "Fill Lines": fill_lines
@@ -83,7 +230,7 @@ def project_explanation(state):
                    a file containing project code and a file containing a brief write up explaining your \
                    solution. We have included template files to be used both for the code and the writeup. \
                    The code file is called P1.ipynb and the writeup template is writeup_template.md</p>', unsafe_allow_html=True)
-    col4.markdown("`Go to the Get Started page to enter details ->`")
+    # col4.markdown("`Go to the Get Started page to enter details ->`")
     image2 = Image.open("examples/laneLines_thirdPass.jpg")
     col3.image(image2, use_column_width=True)
 
@@ -171,7 +318,7 @@ def parameter_experiment(state):
         col2.image(image2, use_column_width=True)
 
 
-def hough_lines(state):
+def hough_lines_page(state):
     # st.title("Draw Hough lines on the image")
     url = "Draw Hough lines on the image"
     st.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-size:34px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{url}</p>', unsafe_allow_html=True)
@@ -212,12 +359,18 @@ def hough_lines(state):
     original_image = np.array(image1.convert('RGB'))
     gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
     state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2)
+    global param_kernel_size
+    param_kernel_size = state.kernel_size
     blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
     state.threshold_values = st.slider('Select the threshold range for canny edge \
                                         detection: (recomended: 50, 150)', 0, 255, (50, 150))
-    low_threshold = state.threshold_values[0]
-    high_threshold = state.threshold_values[1]
-    canny_image = cv2.Canny(blur_image, low_threshold, high_threshold)
+    state.low_threshold = state.threshold_values[0]
+    state.high_threshold = state.threshold_values[1]
+    global param_low_threshold
+    global param_high_threshold
+    param_low_threshold = state.low_threshold
+    param_high_threshold = state.high_threshold
+    canny_image = cv2.Canny(blur_image, state.low_threshold, state.high_threshold)
     # Next we'll create a masked edges image using cv2.fillPoly()
     mask = np.zeros_like(canny_image)   
     ignore_mask_color = 255  
@@ -242,7 +395,7 @@ def hough_lines(state):
     cv2.polylines(stacked_canny, [vertices], isClosed, color, thickness)
     # Define the Hough transform parameters
     # Make a blank the same size as our image to draw on
-    rho = 1 # distance resolution in pixels of the Hough grid
+    # distance resolution in pixels of the Hough grid
     state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1)
     # angular resolution in radians of the Hough grid
     state.angle = st.slider("Select rho value for resolution: (recomemded: 180)", 1, 360, 180, 1)
@@ -253,12 +406,24 @@ def hough_lines(state):
     state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1)
     # maximum gap in pixels between connectable line segments
     state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1)
-     
+    
+    global param_rho
+    global param_theta
+    global param_threshold
+    global param_min_line_length
+    global param_max_line_gap
+
+    param_rho = state.rho
+    param_theta = state.theta
+    param_threshold = state.threshold
+    param_min_line_length = state.min_line_length
+    param_max_line_gap = state.max_line_gap
+
     line_image = np.copy(original_image)*0 # creating a blank to draw lines on
 
     # Run Hough on edge detected image
     # Output "lines" is an array containing endpoints of detected line segments
-    lines = cv2.HoughLinesP(mask_image, rho, state.theta, state.threshold, np.array([]),
+    lines = cv2.HoughLinesP(mask_image, state.rho, state.theta, state.threshold, np.array([]),
                             state.min_line_length, state.max_line_gap)
     
     # Iterate over the output "lines" and draw lines on a blank image
@@ -278,7 +443,10 @@ def hough_lines(state):
 
     st.markdown(' ')
     st.markdown(' ')
-
+    st.markdown('> `The below images in the pipeline changes with respect to the parameters selected above`')
+    st.markdown(' ')
+    st.markdown(' ')
+    
     col7, col8, col9, col10, col11 = st.beta_columns([4,1,4,1,4])
     # col7.markdown('<p style="text-align: center; color: gray">Original Image</p>', unsafe_allow_html=True)
     col7.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Original Image</p>', unsafe_allow_html=True)
@@ -355,6 +523,73 @@ def hough_lines(state):
     st.write(' ')
     st.write(' ')
 
+    st.markdown('<p style="text-align: justify;">You know what\'s cooler than drawing lanes over images? \
+                Drawing lanes over video! We can test our solution on two provided videos and one optional \
+                challenge video: <mark>solidWhiteRight.mp4</mark>, <mark>solidYellowLeft.mp4</mark>, and \
+                <mark>challenge.mp4</mark></p>', unsafe_allow_html=True)                         
+
+    col35, col36, col37 = st.beta_columns([6,1,6])
+    video_file1 = open('test_videos/solidYellowLeft.mp4', 'rb')
+    video_file2 = open('examples/raw-lines-example.mp4', 'rb')
+    video_bytes1 = video_file1.read()
+    video_bytes2 = video_file2.read()
+    col35.video(video_bytes1)
+    col36.markdown(' ')
+    col36.markdown(' ')
+    col36.markdown(' ')
+    col36.markdown(' ')
+    col36.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    col37.video(video_bytes2)
+    
+    # select video
+    test_video = os.listdir("test_videos/")
+    state.test_video = st.selectbox('select video', test_video, 2)
+    root_directory = "test_videos"
+    image_path = state.test_video
+    path = os.path.join(root_directory, image_path)
+
+    image1 = Image.open("test_images/solidYellowCurve.jpg")
+    original_image = np.array(image1.convert('RGB'))
+    original_image = mpimg.imread('test_images/solidWhiteRight.jpg')
+    process = process_image(original_image)
+    st.image(process)
+
+    video_root_directory = "test_videos"
+    video_path = "solidYellowLeft.mp4"
+    vid_path = os.path.join(video_root_directory, video_path)
+
+
+    # Import everything needed to edit/save/watch video clips
+    from moviepy.editor import VideoFileClip
+
+    yellow_output = os.path.join("test_videos_app", "2_1_solidYellowLeft_houghlines.mp4")
+    ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+    ## To do so add .subclip(start_second,end_second) to the end of the line below
+    ## Where start_second and end_second are integer values representing the start and end of the subclip
+    ## You may also uncomment the following line for a subclip of the first 5 seconds
+    ##clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4').subclip(0,5)
+    clip2 = VideoFileClip(vid_path)
+    st.write('ok step 1')
+    # st.write(clip2)
+    # clip1.close()
+    yellow_clip = clip2.fl_image(process_image)
+    # temp_clip = clip2.rotate(180)
+    # temp_clip.show()
+    # temp_clip.preview(fps=15, audio=False)
+    # st.write('ok step 2')
+    yellow_clip.write_videofile(yellow_output, audio=False)
+    # temp_clip.write_videofile(yellow_output, audio=False)
+    # yellow_clip.close()
+    # st.write('ok step 3')
+    # get_ipython().magic('time yellow_clip.write_videofile(yellow_output, audio=False)')
+
+    video_file = open('test_videos_app/2_1_solidYellowLeft_houghlines.mp4', 'rb')
+    video_bytes = video_file.read()
+    st.video(video_bytes)
+    
+
+
+
 
 
 
@@ -372,34 +607,9 @@ def fill_lines(state):
 
 
 def display_state_values(state):
-    #dict_filters = {"Industry" : state.add_selectbox_industry,
-    #                "Sub Industry" : state.add_multibox_sub_industry,
-    #                "Revenue model" : state.add_selectbox_revenue_model,
-    #                "Country" : state.add_selectbox_country,
-    #                "Business type" : state.add_selectbox_business_type,
-    #                "Company size" : state.add_selectbox_company_size,
-    #                "Strategy type" : state.add_selectbox_strategy_type,
-    #                "Objective" : state.add_selectbox_objective
-    #                }
-    #   st.write(dict_filters)
-
     df_filters = pd.DataFrame()
-    df_filters['Filter'] = ["Industry", 
-                            "Sub Industry", 
-                            "Revenue model",
-                            "Country" ,
-                            "Business type",
-                            "Company size",
-                            "Strategy type",
-                            "Objective"]
-    df_filters['Value'] = [state.add_selectbox_industry,
-                           state.add_multibox_sub_industry,
-                           state.add_selectbox_revenue_model,
-                           state.add_selectbox_country,
-                           state.add_selectbox_business_type,
-                           state.add_selectbox_company_size,
-                           state.add_selectbox_strategy_type,
-                           state.add_selectbox_objective]
+    df_filters['Filter'] = []
+    df_filters['Value'] = []
     # st.write(df_filters)
 
     if st.button("Reset Search"):
