@@ -720,7 +720,7 @@ def main():
         "Hough Lines": hough_lines_page,
         "Extrapolate Lines": extrapolate_lines,
         "Stabilize Lines": stabilize_lines,
-        "Fill Lines": fill_lines,
+        "Polyfill Lines": polyfill_lines,
         "Credentials": credentials
     }
 
@@ -882,7 +882,7 @@ def hough_lines_page(state):
     col2.markdown(' ')
     col2.markdown(' ')
     col2.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
-    col3.image(image2, use_column_width=True, caption="Output detecting line segments using helper functions")
+    col3.image(image2, use_column_width=True, caption="Output detecting hough lines using helper functions")
     
     st.write(' ')
     st.write(' ')
@@ -1253,13 +1253,13 @@ def extrapolate_lines(state):
     col1, col2, col3 = st.beta_columns([6,1,6])
     image1 = Image.open("examples/line-segments-example.jpg")
     image2 = Image.open("examples/laneLines_thirdPass.jpg")
-    col1.image(image1, use_column_width=True, caption="The orginal image used to detect land lines on the road")
+    col1.image(image1, use_column_width=True, caption="Output detecting hough lines using helper functions")
     col2.markdown(' ')
     col2.markdown(' ')
     col2.markdown(' ')
     col2.markdown(' ')
     col2.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
-    col3.image(image2, use_column_width=True, caption="Output detecting line segments using helper functions")
+    col3.image(image2, use_column_width=True, caption="Extrapolating hough lines using Linear Regression")
     
     st.write(' ')
     st.write(' ')
@@ -1379,10 +1379,10 @@ def extrapolate_lines(state):
                 slope = np.inf            
             
             if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
-                print('Right Lane with slope:  ',slope)
+                # print('Right Lane with slope:  ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
             elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
-                print('Left Lane with slope : ',slope)
+                # print('Left Lane with slope : ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
     
     # Create a "color" binary image to combine with line image
@@ -1848,15 +1848,14 @@ def stabilize_lines(state):
 
 
 
-def fill_lines(state):
+def polyfill_lines(state):
     # st.title("Fill Hough Lines Pipeline")
     text1 = "Fill Area inside Hough Lines Pipeline"
     st.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-size:34px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text1}</p>', unsafe_allow_html=True)
     st.write('----')
-    st.markdown('<p style="text-align: justify;">Stabilize the extrapolated lines by defining a learning rate \
-                with the previously detected lines.</p>', unsafe_allow_html=True)                         
+    st.markdown('<p style="text-align: justify;">Fill the area between the extrapolated hough lines \
+                after stabilizing them with a learning rate.</p>', unsafe_allow_html=True)                         
 
-    
     global param_kernel_size
     global param_low_threshold
     global param_high_threshold
@@ -1866,6 +1865,250 @@ def fill_lines(state):
     global param_min_line_length
     global param_max_line_gap
 
+    col1, col2, col3 = st.beta_columns([6,1,6])
+    image1 = Image.open("examples/test_example-extrapolated.png")
+    image2 = Image.open("examples/test_example-polyfill.png")
+    col1.image(image1, use_column_width=True, caption="Extrapolated and stabilized hough lines")
+    col2.markdown(' ')
+    col2.markdown(' ')
+    col2.markdown(' ')
+    col2.markdown(' ')
+    col2.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    col3.image(image2, use_column_width=True, caption="Polyfill area between the  hough lines")
+    
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    
+    col4, col5, col6 = st.beta_columns([5,4,5])
+    # col4.markdown('----')
+    # col5.write(':: Hough Lines Pipeline ::')
+    # col6.markdown('----')
+
+    text2 = ':: Polyfill Hough Lines Pipeline on Images ::'
+    st.markdown(f'<p style="background-color:#32a894;color:#2b2b2b;font-size:24px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text2}</p>', unsafe_allow_html=True)
+    st.write('----')
+
+    # select image
+    test_images = os.listdir("test_images/")
+    test_images_challenge = os.listdir("test_images_challenge/")
+    test_images.extend(test_images_challenge)
+    state.test_image = st.selectbox('select image', test_images, 0)
+    root_directory = "test_images"
+    root_directory_challenge = "test_images_challenge"
+    image_path = state.test_image
+    path = os.path.join(root_directory, image_path)
+    path_challenge = os.path.join(root_directory_challenge, image_path)
+    try:
+        image1 = Image.open(path)
+    except FileNotFoundError:
+        image1 = Image.open(path_challenge)
+    original_image = np.array(image1.convert('RGB'))
+    gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+    state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2, key="slider_kernel_size")
+    global param_kernel_size
+    param_kernel_size = state.kernel_size
+    blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
+    state.threshold_values = st.slider('Select the threshold range for canny edge \
+                                        detection: (recomended: 50, 150)', 0, 255, (50, 150), key="slider_threshold_values")
+    state.low_threshold = state.threshold_values[0]
+    state.high_threshold = state.threshold_values[1]
+    global param_low_threshold
+    global param_high_threshold
+    param_low_threshold = state.low_threshold
+    param_high_threshold = state.high_threshold
+    canny_image = cv2.Canny(blur_image, state.low_threshold, state.high_threshold)
+    # Next we'll create a masked edges image using cv2.fillPoly()
+    mask = np.zeros_like(canny_image)
+    #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
+    if len(canny_image.shape) > 2:
+        channel_count = canny_image.shape[2]  # i.e. 3 or 4 depending on your image
+        ignore_mask_color = (255,) * channel_count
+    else:
+        ignore_mask_color = 255
+    # This time we are defining a four sided polygon to mask
+    imshape = original_image.shape
+    vertices = np.array([[(.55*imshape[1], .60*imshape[0]),
+                          (.45*imshape[1], .60*imshape[0]),  
+                          (.15*imshape[1], .90*imshape[0]), 
+                          (.30*imshape[1], .90*imshape[0]), 
+                          (.50*imshape[1], .60*imshape[0]),
+                          (.70*imshape[1], .90*imshape[0]),
+                          (.85*imshape[1], .90*imshape[0]),
+                          (.55*imshape[1], .60*imshape[0])]], dtype=np.int32)
+    cv2.fillPoly(mask, vertices, ignore_mask_color)
+    mask_image = cv2.bitwise_and(canny_image, mask)
+    stacked_canny = np.dstack((canny_image, canny_image, canny_image)) 
+    # identify the region of interest
+    isClosed = True
+    color = (0, 195, 255)
+    thickness = 2
+    vertices = vertices.reshape((-1, 1, 2))
+    cv2.polylines(stacked_canny, [vertices], isClosed, color, thickness)
+    # Define the Hough transform parameters
+    # Make a blank the same size as our image to draw on
+    # distance resolution in pixels of the Hough grid
+    state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1, key="slider_rho")
+    # angular resolution in radians of the Hough grid
+    state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1, key="slider_angle")
+    state.theta = np.pi/state.angle
+    # minimum number of votes (intersections in Hough grid cell)
+    state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1, key="slider_threshold")
+    # minimum number of pixels making up a line
+    state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
+    # maximum gap in pixels between connectable line segments
+    state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
+    
+    global param_rho
+    global param_theta
+    global param_threshold
+    global param_min_line_length
+    global param_max_line_gap
+
+    param_rho = state.rho
+    param_theta = state.theta
+    param_threshold = state.threshold
+    param_min_line_length = state.min_line_length
+    param_max_line_gap = state.max_line_gap
+
+    line_image = np.copy(original_image)*0 # creating a blank to draw lines on
+    line_image_reduced = np.copy(original_image)*0 # creating a blank to draw lines on
+    line_image_fill = np.copy(original_image)*0 # creating a blank to draw lines on
+
+    # Run Hough on edge detected image
+    # Output "lines" is an array containing endpoints of detected line segments
+    lines = cv2.HoughLinesP(mask_image, state.rho, state.theta, state.threshold, np.array([]),
+                            state.min_line_length, state.max_line_gap)
+
+    # Iterate over the output "lines" and draw lines on a blank image
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),10)
+
+    # Iterate over the output "lines" and draw lines on a blank image
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            try:
+                slope = (y2-y1)/(x2-x1)
+            except ZeroDivisionError:
+                slope = np.inf            
+            
+            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+                # print('Right Lane with slope:  ',slope)
+                cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
+            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+                # print('Left Lane with slope : ',slope)
+                cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
+    
+    global r_x1
+    global r_x2
+    global r_x3
+    global l_x1
+    global l_x2
+    global l_x3
+    
+    # Reset global variables to its initial values to avoid carry forward from previous clips
+    r_x1 = 0
+    r_x2 = 0
+    r_x3 = 0
+    l_x1 = 0
+    l_x2 = 0
+    l_x3 = 0
+    
+    rc = np.array([])
+    lc = np.array([])
+    rx = np.array([])
+    ry = np.array([])
+    lx = np.array([])
+    ly = np.array([])
+
+    # Iterate over the output "lines" and draw lines on a blank image
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            center = [(x1+x2)/2, (y1+y2)/2]
+
+            try:
+                slope = (y2-y1)/(x2-x1)
+            except ZeroDivisionError:
+                slope = np.inf            
+            
+            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+                rc = np.append(rc, center)
+                rx = np.append(rx, [x1,x2])
+                ry = np.append(ry, [y1,y2])
+                
+            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+                lc = np.append(lc, center)
+                lx = np.append(lx, [x1,x2])
+                ly = np.append(ly, [y1,y2])
+    
+
+    r_center = np.mean(rc, axis = 0)
+    l_center = np.mean(lc, axis = 0)
+    y1 = imshape[0]
+    y2 = imshape[0]*0.65
+    
+    if not np.isnan(r_center).all():
+        rx = rx.reshape(-1,1)
+        reg.fit(rx, ry)
+        r_slope, r_intercept = reg.coef_[0], reg.intercept_
+        if r_slope > 0.5 and r_slope < 10:
+            r_x1_new = (y1 - r_intercept) / r_slope
+            r_x2_new = (y2 - r_intercept) / r_slope
+            r_x3_new = ((y2 + (imshape[0]/50)) - r_intercept) / r_slope
+            
+            if r_x1 == 0:
+                learning_rate = 1
+            else:
+                learning_rate = 0.2
+                
+            r_x1 = (learning_rate * r_x1_new) + ((1 - learning_rate) * r_x1)
+            r_x2 = (learning_rate * r_x2_new) + ((1 - learning_rate) * r_x2)
+            r_x3 = (learning_rate * r_x3_new) + ((1 - learning_rate) * r_x3)
+        
+    
+    if not np.isnan(l_center).all():
+        lx = lx.reshape(-1,1)
+        reg.fit(lx, ly)
+        l_slope, l_intercept = reg.coef_[0], reg.intercept_
+        if l_slope < -0.5 and l_slope > -10:
+            l_x1_new = (y1 - l_intercept) / l_slope
+            l_x2_new = (y2 - l_intercept) / l_slope
+            l_x3_new = ((y2 + (imshape[0]/50)) - l_intercept) / l_slope
+            
+            if l_x1 == 0:
+                learning_rate = 1
+            else:
+                learning_rate = 0.2
+                
+            l_x1 = (learning_rate * l_x1_new) + ((1 - learning_rate) * l_x1)
+            l_x2 = (learning_rate * l_x2_new) + ((1 - learning_rate) * l_x2)
+            l_x3 = (learning_rate * l_x3_new) + ((1 - learning_rate) * l_x3)
+    
+    # fill the image
+    add_image_fill(line_image_fill, r_x1, r_x2, l_x1, l_x2, y1, y2, color)
+
+    # Create a "color" binary image to combine with line image
+    stacked_mask = np.dstack((mask_image, mask_image, mask_image)) 
+
+    # Draw the lines on the edge image
+    hough_canny = cv2.addWeighted(stacked_mask, 0.8, line_image, 1, 0)
+    hough_original = cv2.addWeighted(original_image, 0.8, line_image, 1, 0)
+    hough_canny_reduced = cv2.addWeighted(stacked_mask, 0.8, line_image_reduced, 1, 0)
+    hough_original_reduced = cv2.addWeighted(original_image, 0.8, line_image_reduced, 1, 0)
+    
+    # draw extrapolated lines using hough transform
+    hough_extrapolated_image = hough_lines_extrapolated(mask_image, state.rho, state.theta, state.threshold,
+                                                        state.min_line_length, state.max_line_gap)
+    # perform weighted addition of line_image and original image to potray lane markings
+    extrapolated_image = weighted_img(hough_extrapolated_image, original_image, α=1, β=0.6, γ=0.)
+   
+    # polyfill hough lines
+    hough_polyfill_image = hough_lines_fill(mask_image, state.rho, state.theta, state.threshold,
+                                                        state.min_line_length, state.max_line_gap)
+    # perform weighted addition of line_image and original image to potray lane markings
+    polyfill_image = weighted_img(hough_polyfill_image, original_image, α=1, β=0.6, γ=0.)
 
 
     state_dict = {
@@ -1932,7 +2175,90 @@ def fill_lines(state):
         param_min_line_length = 10
         param_max_line_gap = 70
 
-            
+
+    st.markdown(' ')
+    st.markdown(' ')
+    st.markdown('> `The below images in the pipeline changes with respect to the parameters selected above`')
+    st.markdown(' ')
+    st.markdown(' ')
+    
+    col7, col8, col9, col10, col11 = st.beta_columns([4,1,4,1,4])
+    # col7.markdown('<p style="text-align: center; color: gray">Original Image</p>', unsafe_allow_html=True)
+    col7.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Original Image</p>', unsafe_allow_html=True)
+    col7.image(original_image, use_column_width=True)
+    col8.markdown(' ')
+    col8.markdown(' ')
+    col8.markdown(' ')
+    col8.markdown(' ')
+    col8.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    # col9.markdown('<p style="text-align: center;">Gray Image</p>', unsafe_allow_html=True)
+    col9.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Gray Image</p>', unsafe_allow_html=True)
+    col9.image(gray_image, use_column_width=True)
+    col10.markdown(' ')
+    col10.markdown(' ')
+    col10.markdown(' ')
+    col10.markdown(' ')
+    col10.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    # col11.markdown('<p style="text-align: center;">Blur Image</p>', unsafe_allow_html=True)
+    col11.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Blur Image</p>', unsafe_allow_html=True)
+    col11.image(blur_image, use_column_width=True)
+
+    col12, col13, col14, col15, col16 = st.beta_columns([4,1,4,1,4])
+    col16.markdown('<p style="font-size:30px; text-align: center;"><b>&#8595;</b></p>', unsafe_allow_html=True)
+    
+    col17, col18, col19, col20, col21 = st.beta_columns([4,1,4,1,4])
+    # col17.markdown('<p style="text-align: center;">Masked Image</p>', unsafe_allow_html=True)
+    col17.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Masked Image</p>', unsafe_allow_html=True)
+    col17.image(mask_image, use_column_width=True)
+    col18.markdown(' ')
+    col18.markdown(' ')
+    col18.markdown(' ')
+    col18.markdown(' ')
+    col18.markdown('<p style="font-size:30px;"><b>&#8592;</b></p>', unsafe_allow_html=True)
+    # col19.markdown('<p style="text-align: center;">Area of Interest</p>', unsafe_allow_html=True)
+    col19.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Area of Interest</p>', unsafe_allow_html=True)
+    col19.image(stacked_canny, use_column_width=True)
+    col20.markdown(' ')
+    col20.markdown(' ')
+    col20.markdown(' ')
+    col20.markdown(' ')
+    col20.markdown('<p style="font-size:30px;"><b>&#8592;</b></p>', unsafe_allow_html=True)
+    # col21.markdown('<p style="text-align: center;">Canny Edges</p>', unsafe_allow_html=True)
+    col21.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Canny Edges</p>', unsafe_allow_html=True)
+    col21.image(canny_image, use_column_width=True)
+
+    col22, col23, col24, col25, col26 = st.beta_columns([4,1,4,1,4])
+    col22.markdown('<p style="font-size:30px; text-align: center;"><b>&#8595;</b></p>', unsafe_allow_html=True)
+    
+    col27, col28, col29, col30, col31 = st.beta_columns([4,1,4,1,4])
+    # col27.markdown('<p style="text-align: center;">Hough Lines Masked</p>', unsafe_allow_html=True)
+    col27.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Hough Lines Masked</p>', unsafe_allow_html=True)
+    col27.image(hough_canny, use_column_width=True)
+    col28.markdown(' ')
+    col28.markdown(' ')
+    col28.markdown(' ')
+    col28.markdown(' ')
+    col28.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    # col29.markdown('<p style="text-align: center;">Clear redundant lines</p>', unsafe_allow_html=True)
+    col29.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Clear redundant lines</p>', unsafe_allow_html=True)
+    col29.image(hough_canny_reduced, use_column_width=True)
+    col30.markdown(' ')
+    col30.markdown(' ')
+    col30.markdown(' ')
+    col30.markdown(' ')
+    col30.markdown('<p style="font-size:30px;"><b>&#8594;</b></p>', unsafe_allow_html=True)
+    # col31.markdown('<p style="text-align: center;">Extrapolated Lines</p>', unsafe_allow_html=True)
+    col31.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Extrapolated Lines</p>', unsafe_allow_html=True)
+    col31.image(extrapolated_image, use_column_width=True)
+
+    col32, col33, col34, col35, col36 = st.beta_columns([4,1,4,1,4])
+    col36.markdown('<p style="font-size:30px; text-align: center;"><b>&#8595;</b></p>', unsafe_allow_html=True)
+    
+    col37, col38, col39, col40, col41 = st.beta_columns([4,1,4,1,4])
+    # col41.markdown('<p style="text-align: center;">Polyfill Lines</p>', unsafe_allow_html=True)
+    col41.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">Polyfill Lines</p>', unsafe_allow_html=True)
+    col41.image(polyfill_image, use_column_width=True)
+        
     st.write(' ')
     st.write(' ')
     st.write(' ')
