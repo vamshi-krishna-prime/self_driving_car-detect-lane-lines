@@ -1291,12 +1291,12 @@ def extrapolate_lines(state):
         image1 = Image.open(path_challenge)
     original_image = np.array(image1.convert('RGB'))
     gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-    state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2)
+    state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2, key="slider_kernel_size")
     global param_kernel_size
     param_kernel_size = state.kernel_size
     blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
     state.threshold_values = st.slider('Select the threshold range for canny edge \
-                                        detection: (recomended: 50, 150)', 0, 255, (50, 150))
+                                        detection: (recomended: 50, 150)', 0, 255, (50, 150), key="slider_threshold_values")
     state.low_threshold = state.threshold_values[0]
     state.high_threshold = state.threshold_values[1]
     global param_low_threshold
@@ -1334,16 +1334,16 @@ def extrapolate_lines(state):
     # Define the Hough transform parameters
     # Make a blank the same size as our image to draw on
     # distance resolution in pixels of the Hough grid
-    state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1)
+    state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1, key="slider_rho")
     # angular resolution in radians of the Hough grid
-    state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1)
+    state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1, key="slider_angle")
     state.theta = np.pi/state.angle
     # minimum number of votes (intersections in Hough grid cell)
-    state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1)
+    state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1, key="slider_threshold")
     # minimum number of pixels making up a line
-    state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1)
+    state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
     # maximum gap in pixels between connectable line segments
-    state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1)
+    state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
     
     global param_rho
     global param_theta
@@ -1732,9 +1732,17 @@ def stabilize_lines(state):
 
     st.write(state_df)
 
-    if st.button("Reset parameters to default values"):
+    if st.button("Reset Parameters to default values", on_click=_update_slider):
         state.clear()
-
+        # reset the default values of the parameters
+        param_kernel_size = 5
+        param_low_threshold = 50
+        param_high_threshold = 150
+        param_rho = 1
+        param_theta = np.pi/180
+        param_threshold = 40
+        param_min_line_length = 10
+        param_max_line_gap = 70
             
     st.write(' ')
     st.write(' ')
@@ -1912,8 +1920,17 @@ def fill_lines(state):
 
     st.write(state_df)
 
-    if st.button("Reset parameters to default values"):
+    if st.button("Reset Parameters to default values", on_click=_update_slider):
         state.clear()
+        # reset the default values of the parameters
+        param_kernel_size = 5
+        param_low_threshold = 50
+        param_high_threshold = 150
+        param_rho = 1
+        param_theta = np.pi/180
+        param_threshold = 40
+        param_min_line_length = 10
+        param_max_line_gap = 70
 
             
     st.write(' ')
