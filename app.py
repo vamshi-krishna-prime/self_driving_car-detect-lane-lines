@@ -967,8 +967,6 @@ def hough_lines_page(state):
     state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
     # maximum gap in pixels between connectable line segments
     state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
-
-
     
     global param_rho
     global param_theta
@@ -1001,8 +999,7 @@ def hough_lines_page(state):
     hough_canny = cv2.addWeighted(stacked_mask, 0.8, line_image, 1, 0)
     hough_original = cv2.addWeighted(original_image, 0.8, line_image, 1, 0)
 
-
-
+    # display parameter values in a table
     state_dict = {
         'kernel_size' : state.kernel_size,
         'low_threshold' : state.low_threshold,
@@ -1015,11 +1012,7 @@ def hough_lines_page(state):
 
     }
 
-
     state_df = pd.DataFrame(state_dict.items(), columns=['parameter', 'value'])
-
-
- 
 
     state_df['selected_value'] = pd.Series([param_kernel_size,
                                             param_low_threshold,
@@ -1035,13 +1028,6 @@ def hough_lines_page(state):
 
     st.write(state_df)
 
-    # if st.button("Reset parameters to default values"):
-
-
-
-
-
-
     if st.button("Reset Parameters", on_click=_update_slider):
         state.clear()
         # reset the default values of the parameters
@@ -1053,8 +1039,6 @@ def hough_lines_page(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
-
-        
 
     st.markdown(' ')
     st.markdown(' ')
@@ -1416,8 +1400,36 @@ def extrapolate_lines(state):
     # perform weighted addition of line_image and original image to potray lane markings
     extrapolated_image = weighted_img(hough_extrapolated_image, original_image, α=1, β=0.6, γ=0.)
 
+    # display parameter values in a table
+    state_dict = {
+        'kernel_size' : state.kernel_size,
+        'low_threshold' : state.low_threshold,
+        'high_threshold' : state.high_threshold,
+        'rho' : state.rho,
+        'theta' : state.theta,
+        'threshold' : state.threshold,
+        'min_line_length' : state.min_line_length,
+        'max_line_gap' : state.max_line_gap
 
-    if st.button("Reset Parameters"):
+    }
+
+    state_df = pd.DataFrame(state_dict.items(), columns=['parameter', 'value'])
+
+    state_df['selected_value'] = pd.Series([param_kernel_size,
+                                            param_low_threshold,
+                                            param_high_threshold,
+                                            param_rho,
+                                            param_theta,
+                                            param_threshold,
+                                            param_min_line_length,
+                                            param_max_line_gap])
+
+    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70])
+    state_df.drop(columns = ['value'], inplace=True)
+
+    st.write(state_df)
+
+    if st.button("Reset Parameters", on_click=_update_slider):
         state.clear()
         # reset the default values of the parameters
         param_kernel_size = 5
