@@ -57,6 +57,20 @@ param_min_line_length = 10
 param_max_line_gap = 70
 
 
+# Reset parameters to its default values
+def _update_slider():
+    '''
+    Reset parameters to its default values
+    '''
+    st.session_state["slider_kernel_size"] = 5
+    st.session_state["slider_threshold_values"] = (50, 150)
+    st.session_state["slider_rho"] = 1
+    st.session_state["slider_angle"] = 180
+    st.session_state["slider_threshold"] = 40
+    st.session_state["slider_min_line_length"] = 10
+    st.session_state["slider_max_line_gap"] = 70
+
+
 # Helper Functions
 def grayscale(img):
     """Applies the Grayscale transform
@@ -725,6 +739,7 @@ def main():
     state.sync()
 
 
+
 def project_explanation(state):
     st.title("Finding Lane Lines on the Road")
     st.markdown("[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)")
@@ -847,6 +862,7 @@ def parameter_experiment(state):
 
 
 
+
 def hough_lines_page(state):
     # st.title("Draw Hough lines on the image")
     text1 = "Hough Lines Pipeline"
@@ -898,12 +914,12 @@ def hough_lines_page(state):
         image1 = Image.open(path_challenge)
     original_image = np.array(image1.convert('RGB'))
     gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-    state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2)
+    state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2, key="slider_kernel_size")
     global param_kernel_size
     param_kernel_size = state.kernel_size
     blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
     state.threshold_values = st.slider('Select the threshold range for canny edge \
-                                        detection: (recomended: 50, 150)', 0, 255, (50, 150))
+                                        detection: (recomended: 50, 150)', 0, 255, (50, 150), key="slider_threshold_values")
     state.low_threshold = state.threshold_values[0]
     state.high_threshold = state.threshold_values[1]
     global param_low_threshold
@@ -941,16 +957,18 @@ def hough_lines_page(state):
     # Define the Hough transform parameters
     # Make a blank the same size as our image to draw on
     # distance resolution in pixels of the Hough grid
-    state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1)
+    state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1, key="slider_rho")
     # angular resolution in radians of the Hough grid
-    state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1)
+    state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1, key="slider_angle")
     state.theta = np.pi/state.angle
     # minimum number of votes (intersections in Hough grid cell)
-    state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1)
+    state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1, key="slider_threshold")
     # minimum number of pixels making up a line
-    state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1)
+    state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
     # maximum gap in pixels between connectable line segments
-    state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1)
+    state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
+
+
     
     global param_rho
     global param_theta
@@ -983,7 +1001,48 @@ def hough_lines_page(state):
     hough_canny = cv2.addWeighted(stacked_mask, 0.8, line_image, 1, 0)
     hough_original = cv2.addWeighted(original_image, 0.8, line_image, 1, 0)
 
-    if st.button("Reset Parameters"):
+
+
+    state_dict = {
+        'kernel_size' : state.kernel_size,
+        'low_threshold' : state.low_threshold,
+        'high_threshold' : state.high_threshold,
+        'rho' : state.rho,
+        'theta' : state.theta,
+        'threshold' : state.threshold,
+        'min_line_length' : state.min_line_length,
+        'max_line_gap' : state.max_line_gap
+
+    }
+
+
+    state_df = pd.DataFrame(state_dict.items(), columns=['parameter', 'value'])
+
+
+ 
+
+    state_df['selected_value'] = pd.Series([param_kernel_size,
+                                            param_low_threshold,
+                                            param_high_threshold,
+                                            param_rho,
+                                            param_theta,
+                                            param_threshold,
+                                            param_min_line_length,
+                                            param_max_line_gap])
+
+    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70])
+    state_df.drop(columns = ['value'], inplace=True)
+
+    st.write(state_df)
+
+    # if st.button("Reset parameters to default values"):
+
+
+
+
+
+
+    if st.button("Reset Parameters", on_click=_update_slider):
         state.clear()
         # reset the default values of the parameters
         param_kernel_size = 5
