@@ -2374,80 +2374,159 @@ def polyfill_lines(state):
 
 
 def credentials(state):
-    st.markdown('# Credentials')
+    st.markdown('# Contact Details')
     st.write('------------')
 
-    # instructer_Thomas_Hossler = Image.open("images/Instructor_Thomas_Hossler.jpg")
-    # instructer_Antje_Muntzinger = Image.open("images/Instructor_Antje_Muntzinger.jpg")
-    # instructer_andreas_bw = Image.open("images/andreas_bw.jpg")
-    # instructer_Aaron_Brown = Image.open("images/Instructor_Aaron_Brown.jpg")
-    # instructer_Munir_Jojo_Verge = Image.open("images/Instructor_Munir_Jojo_Verge.jpg")
-    # instructer_Mathilde_Badoual = Image.open("images/Instructor_Mathilde_Badoual.jpg")
-    # instructer_david_silver = Image.open("images/david-silver.jpg")
+    primaryColor = st.get_option("theme.primaryColor")
+
+    s = f"""
+    <style>
+        
+    /* Style the buttons */
+    .btn{{
+        font: .8125rem/1.5rem "Open Sans",sans-serif;
+        font-weight: 600;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        height: 2rem;
+        padding: 0 1rem;
+        /*background: #02b3e4; */
+        background: #21ECEC;
+        color: #000;
+        border: transparent;
+        border-radius: .25rem;
+        cursor: pointer;
+        margin: 2px;
+        display: flex;
+        /* flex-direction: column; */
+        width: 100%;
+        text-align: center;
+        align-self: center;
+        justify-content: center;
+        display: table-cell;
+        vertical-align: middle;
+    }}
+    
+    /* Style the buttons on hover */
+    .btn:hover {{
+        color: #000;
+        background: #ebd3bc;
+        box-shadow: 0 0 16px 0 rgba(255,255,255,.16),
+        0 8px 16px 0 rgba(255,255,255,.08),
+        0 16px 32px 0 rgba(255,255,255,.08);
+    }}
+    
+    /* Style the buttons on click */
+    .btn:focus {{
+        color: #1a1917;
+        background: #ebd3bc;
+        box-shadow: 0 0 8px 0 rgba(255,255,255,.16),
+        0 4px 8px 0 rgba(255,255,255,.08),
+        0 8px 16px 0 rgba(255,255,255,.08);
+    }}
+
+    </style>
+    """
+    
+    st.markdown(s, unsafe_allow_html=True)
 
     col1, col2, col3 = st.beta_columns(3)
-    # col1.image(instructer_Thomas_Hossler, use_column_width=True, caption="Thomas Hossler")
-    col1.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/7q6f5RUKfEH5FajZEF7yu2/d645a165ef7b659d087dd38bfab7aab4/Instructor_Thomas_Hossler.jpg", use_column_width=True, caption=None)
-    col1.markdown('<p style="text-align: center;color:#0686c2">Thomas Hossler</p>', unsafe_allow_html=True)
-    col1.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SR DEEP LEARNING ENGINEER</p>', unsafe_allow_html=True)
-    col1.markdown('<p style="text-align: justify;">Thomas is originally a geophysicist but his passion for Computer Vision led him to become a Deep Learning engineer \
+    image1 = Image.open("images/Profile_Photo_2.png")
+    col1.image(image1, use_column_width=True, caption=None)
+    col2.write('')
+    col2.markdown(f'<a style="display: block; text-align: left;" href="https://www.vamshi-krishna.com/" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">Portfolio</button></a>',  unsafe_allow_html=True)
+    col2.markdown(f'<a style="display: block; text-align: left;" href="https://www.linkedin.com/in/vamshi-krishna-prime/" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">LinkedIn</button></a>',  unsafe_allow_html=True)
+    col2.markdown(f'<a style="display: block; text-align: left;" href="https://github.com/vamshi-krishna-prime" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">GitHub</button></a>',  unsafe_allow_html=True)
+    col2.markdown(f'<a style="display: block; text-align: left;" href="mailto:vamshi.krishna.prime@gmail.com" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">Gmail</button></a>',  unsafe_allow_html=True)
+
+    st.markdown('<p style="text-align: justify;">Data Scientist and Machine Learning Engineer. Interested in advanced technologies and modern approaches in Artificial Intelligence. Having a diversified skillset \
+                and experience as the Research Lead has allowed me to bring the best of both technical & analytical fields. Passionate to continue the journey focusing on data science, artificial intelligence \
+                and contribute to utilizing the current skills while acquiring new skills by working in larger cross-functional teams.</p>', unsafe_allow_html=True)
+    st.write('----')
+
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    
+    st.markdown('# Credentials')
+    # st.write('------------')
+
+
+    col4, col5 = st.beta_columns((1,2))
+    col4.write('----')
+
+
+    col6, col7 = st.beta_columns((1,2))
+    col6.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/7q6f5RUKfEH5FajZEF7yu2/d645a165ef7b659d087dd38bfab7aab4/Instructor_Thomas_Hossler.jpg", use_column_width=True, caption="Thomas Hossler")
+    # col6.markdown('<p style="text-align: center;color:#0686c2">Thomas Hossler</p>', unsafe_allow_html=True)
+    col7.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SR DEEP LEARNING ENGINEER</p>', unsafe_allow_html=True)
+    col7.markdown('<p style="text-align: justify;">Thomas is originally a geophysicist but his passion for Computer Vision led him to become a Deep Learning engineer \
                   at various startups. By creating online courses, he is hoping to make education more accessible. When he is not coding, Thomas can be found in the \
-                  mountains skiing or climbing.</p>', unsafe_allow_html=True)                         
-    col2.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/1XVsh7Ylis08ykf85QwBLV/89ff7fd3216d37f51b7873e26497e780/Instructor_Antje_Muntzinger.jpg", use_column_width=True, caption=None)
-    col2.markdown('<p style="text-align: center;color:#0686c2">Antje Muntzinger</p>', unsafe_allow_html=True)
-    col2.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SELF-DRIVING CAR ENGINEER</p>', unsafe_allow_html=True)
-    col2.markdown('<p style="text-align: justify;">Antje Muntzinger is a technical lead for sensor fusion at Mercedes-Benz. She wrote her PhD about sensor fusion for \
+                  mountains skiing or climbing.</p>', unsafe_allow_html=True) 
+    col7.write('----')
+
+
+    col8, col9 = st.beta_columns((2,1))
+    col9.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/1XVsh7Ylis08ykf85QwBLV/89ff7fd3216d37f51b7873e26497e780/Instructor_Antje_Muntzinger.jpg", use_column_width=True, caption="Antje Muntzinger")
+    # col9.markdown('<p style="text-align: center;color:#0686c2">Antje Muntzinger</p>', unsafe_allow_html=True)
+    col8.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SELF-DRIVING CAR ENGINEER</p>', unsafe_allow_html=True)
+    col8.markdown('<p style="text-align: justify;">Antje Muntzinger is a technical lead for sensor fusion at Mercedes-Benz. She wrote her PhD about sensor fusion for \
                   advanced driver assistance systems and holds a diploma in mathematics. By educating more self-driving car engineers, she hopes to realize the dream \
-                  of fully autonomous driving together in the future</p>', unsafe_allow_html=True)                         
-    col3.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/6laad1V5rZavPbhn6TCQbw/e4fba6f44c94d5d3d1b62d4924b7a913/andreas_bw.png", use_column_width=True, caption=None)
-    col3.markdown('<p style="text-align: center;color:#0686c2">Andreas Haja</p>', unsafe_allow_html=True)
-    col3.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">PROFESSOR</p>', unsafe_allow_html=True)
-    col3.markdown('<p style="text-align: justify;">Andreas Haja is an engineer, educator and autonomous vehicle enthusiast with a PhD in computer science. Andreas \
-                  now works as a professor, where he focuses on project-based learning in engineering. During his career with Volkswagen and Bosch he developed \
-                  camera technology and autonomous vehicle prototypes.</p>', unsafe_allow_html=True)                         
+                  of fully autonomous driving together in the future.</p>', unsafe_allow_html=True)
+    col8.write('----')
 
-    col4, col5, col6 = st.beta_columns(3)
-    col4.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/5JybeGS4I78bFbtA0l73sT/5d3190a11929a427a0160dc2dd55086c/Instructor_Aaron_Brown.jpg", use_column_width=True, caption=None)
-    col4.markdown('<p style="text-align: center;color:#0686c2">Aaron Brown</p>', unsafe_allow_html=True)
-    col4.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SENIOR AV SOFTWARE ENGINEER</p>', unsafe_allow_html=True)
-    col4.markdown('<p style="text-align: justify;">Aaron has a background in electrical engineering, robotics and deep learning. Currently working with Mercedes-Benz \
-                  Research & Development as a Senior AV Software Engineer, he has worked as a Content Developer and Simulation Engineer at Udacity focusing on \
-                  developing projects for self-driving cars.</p>', unsafe_allow_html=True)                         
-    col5.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/JI0WDye0guMnqdg8rUid9/408f82d8861703c570220ddb23a3470d/Instructor_Munir_Jojo_Verge.jpg", use_column_width=True, caption=None)
-    col5.markdown('<p style="text-align: center;color:#0686c2">Munir Jojo Verge</p>', unsafe_allow_html=True)
-    col5.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">LEAD AUTONOMOUS & AI SYSTEMS DEVELOPER AT MITRE</p>', unsafe_allow_html=True)
-    col5.markdown('<p style="text-align: justify;">Before MITRE, Munir was a Motion Planning & Decision-Making Manager at Amazon. He also worked for a \
-                  2 Self-driving car companies and for WaltDisney Shanghai building TronLightcycle. Munir holds a B.Eng. in Aerospace, a M.S. in Physics, \
-                  and a M.S. in Space Studies.</p>', unsafe_allow_html=True)                         
-    col6.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/rwJ5lsg74Jtn7zhzaGxaW/35ff9c930d0d30f8c00766a0d8766dd5/Instructor_Mathilde_Badoual.jpg", use_column_width=True, caption=None)
-    col6.markdown('<p style="text-align: center;color:#0686c2">Mathilde Badoual</p>', unsafe_allow_html=True)
-    col6.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">FIFTH YEAR PHD STUDENT AT UC BERKELEY</p>', unsafe_allow_html=True)
-    col6.markdown('<p style="text-align: justify;">Mathilde has a strong background in optimization and control, including reinforcement learning and \
-                  has an engineering diploma from the electrical engineering school Supelec, in France. Previously she worked at Tesla in the energy \
-                  and optimization team.</p>', unsafe_allow_html=True)
-
-    col7, col8, col9 = st.beta_columns(3)
-    col7.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/5rXd5WJEohTxwuLSJEnNOT/323f240cade3b2c9bfc6a397fad38eca/david-silver.jpg", use_column_width=True, caption=None)
-    col7.markdown('<p style="text-align: center;color:#0686c2">David Silver</p>', unsafe_allow_html=True)
-    col7.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SENIOR SOFTWARE ENGINEER</p>', unsafe_allow_html=True)
-    col7.markdown('<p style="text-align: justify;">Prior to working as a Senior Software Engineer in the autonomous vehicle industry, David Silver \
-                  led School of Autonomous Systems at Udacity. David was also a research engineer on the autonomous vehicle team at Ford. He has an \
-                  MBA from Stanford, and a BSE in computer science from Princeton.</p>', unsafe_allow_html=True)                         
 
 
     col10, col11 = st.beta_columns((1,2))
-    col10.write('----')
+    col10.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/6laad1V5rZavPbhn6TCQbw/e4fba6f44c94d5d3d1b62d4924b7a913/andreas_bw.png", use_column_width=True, caption="Andreas Haja")
+    # col10.markdown('<p style="text-align: center;color:#0686c2">Andreas Haja</p>', unsafe_allow_html=True)
+    col11.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">PROFESSOR</p>', unsafe_allow_html=True)
+    col11.markdown('<p style="text-align: justify;">Andreas Haja is an engineer, educator and autonomous vehicle enthusiast with a PhD in computer science. Andreas \
+                  now works as a professor, where he focuses on project-based learning in engineering. During his career with Volkswagen and Bosch he developed \
+                  camera technology and autonomous vehicle prototypes.</p>', unsafe_allow_html=True) 
+    col11.write('----')
 
-    col12, col13 = st.beta_columns((1,2))
-    col12.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/5rXd5WJEohTxwuLSJEnNOT/323f240cade3b2c9bfc6a397fad38eca/david-silver.jpg", use_column_width=True, caption="David Silver")
-    # col12.markdown('<p style="text-align: center;color:#0686c2">David Silver</p>', unsafe_allow_html=True)
-    col13.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SENIOR SOFTWARE ENGINEER</p>', unsafe_allow_html=True)
-    col13.markdown('<p style="text-align: justify;">Prior to working as a Senior Software Engineer in the autonomous vehicle industry, David Silver \
-                   led School of Autonomous Systems at Udacity. David was also a research engineer on the autonomous vehicle team at Ford. He has an \
-                   MBA from Stanford, and a BSE in computer science from Princeton.</p>', unsafe_allow_html=True) 
-    
+
+    col12, col13 = st.beta_columns((2,1))
+    col13.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/5JybeGS4I78bFbtA0l73sT/5d3190a11929a427a0160dc2dd55086c/Instructor_Aaron_Brown.jpg", use_column_width=True, caption="Aaron Brown")
+    # col13.markdown('<p style="text-align: center;color:#0686c2">Aaron Brown</p>', unsafe_allow_html=True)
+    col12.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SENIOR AV SOFTWARE ENGINEER</p>', unsafe_allow_html=True)
+    col12.markdown('<p style="text-align: justify;">Aaron has a background in electrical engineering, robotics and deep learning. Currently working with Mercedes-Benz \
+                  Research & Development as a Senior AV Software Engineer, he has worked as a Content Developer and Simulation Engineer at Udacity focusing on \
+                  developing projects for self-driving cars.</p>', unsafe_allow_html=True)  
+    col12.write('----')
+
+
     col14, col15 = st.beta_columns((1,2))
+    col14.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/JI0WDye0guMnqdg8rUid9/408f82d8861703c570220ddb23a3470d/Instructor_Munir_Jojo_Verge.jpg", use_column_width=True, caption="Munir Jojo Verge")
+    # col14.markdown('<p style="text-align: center;color:#0686c2">Munir Jojo Verge</p>', unsafe_allow_html=True)
+    col15.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">LEAD AUTONOMOUS & AI SYSTEMS DEVELOPER AT MITRE</p>', unsafe_allow_html=True)
+    col15.markdown('<p style="text-align: justify;">Before MITRE, Munir was a Motion Planning & Decision-Making Manager at Amazon. He also worked for a \
+                  2 Self-driving car companies and for WaltDisney Shanghai building TronLightcycle. Munir holds a B.Eng. in Aerospace, a M.S. in Physics, \
+                  and a M.S. in Space Studies.</p>', unsafe_allow_html=True)  
     col15.write('----')
+
+
+    col16, col17 = st.beta_columns((2,1))
+    col17.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/rwJ5lsg74Jtn7zhzaGxaW/35ff9c930d0d30f8c00766a0d8766dd5/Instructor_Mathilde_Badoual.jpg", use_column_width=True, caption=None)
+    # col17.markdown('<p style="text-align: center;color:#0686c2">Mathilde Badoual</p>', unsafe_allow_html=True)
+    col16.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">FIFTH YEAR PHD STUDENT AT UC BERKELEY</p>', unsafe_allow_html=True)
+    col16.markdown('<p style="text-align: justify;">Mathilde has a strong background in optimization and control, including reinforcement learning and \
+                  has an engineering diploma from the electrical engineering school Supelec, in France. Previously she worked at Tesla in the energy \
+                  and optimization team.</p>', unsafe_allow_html=True)
+    col16.write('----')
+
+
+    col18, col19 = st.beta_columns((1,2))
+    col18.image("https://www.udacity.com/www-proxy/contentful/assets/2y9b3o528xhq/5rXd5WJEohTxwuLSJEnNOT/323f240cade3b2c9bfc6a397fad38eca/david-silver.jpg", use_column_width=True, caption="David Silver")
+    # col18.markdown('<p style="text-align: center;color:#0686c2">David Silver</p>', unsafe_allow_html=True)
+    col19.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">SENIOR SOFTWARE ENGINEER</p>', unsafe_allow_html=True)
+    col19.markdown('<p style="text-align: justify;">Prior to working as a Senior Software Engineer in the autonomous vehicle industry, David Silver \
+                  led School of Autonomous Systems at Udacity. David was also a research engineer on the autonomous vehicle team at Ford. He has an \
+                  MBA from Stanford, and a BSE in computer science from Princeton.</p>', unsafe_allow_html=True)  
+    col19.write('----')
+    
 
 
 
