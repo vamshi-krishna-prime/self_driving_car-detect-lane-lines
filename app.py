@@ -18,7 +18,7 @@ from sklearn.linear_model import LinearRegression
 
 
 st.set_page_config(
-    page_title="Self Driving Car ND", # String or None. Strings get appended with "• Streamlit". 
+    page_title="Self Driving Car ND, Udacity", # String or None. Strings get appended with "• Streamlit". 
     page_icon=":blue_car:", # String, anything supported by st.image, or None.
     layout="centered", # Can be "centered" or "wide". In the future also "dashboard", etc.
     initial_sidebar_state="expanded", # Can be "auto", "expanded", "collapsed"
@@ -786,6 +786,7 @@ def parameter_experiment(state):
     # st.write('------')
 
     col1, col2 = st.beta_columns(2)
+
 
     # select image
     test_images = os.listdir("test_images/")
@@ -2374,7 +2375,9 @@ def polyfill_lines(state):
 
 
 def credentials(state):
-    st.markdown('# Contact Details')
+    text1 = "Contact Details: Vamshi Krishna Prime"
+    st.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-size:34px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text1}</p>', unsafe_allow_html=True)
+    # st.markdown('# Contact Details: Vamshi Krishna Prime')
     st.write('------------')
 
     primaryColor = st.get_option("theme.primaryColor")
@@ -2439,16 +2442,16 @@ def credentials(state):
     col2.markdown(f'<a style="display: block; text-align: left;" href="https://github.com/vamshi-krishna-prime" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">GitHub</button></a>',  unsafe_allow_html=True)
     col2.markdown(f'<a style="display: block; text-align: left;" href="mailto:vamshi.krishna.prime@gmail.com" target="_blank"><button type="button" class="btn" style="height:30px;width:200px">Gmail</button></a>',  unsafe_allow_html=True)
 
-    st.markdown('<p style="text-align: justify;">Data Scientist and Machine Learning Engineer. Interested in advanced technologies and modern approaches in Artificial Intelligence. Having a diversified skillset \
-                and experience as the Research Lead has allowed me to bring the best of both technical & analytical fields. Passionate to continue the journey focusing on data science, artificial intelligence \
-                and contribute to utilizing the current skills while acquiring new skills by working in larger cross-functional teams.</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: justify;">Data Scientist and Machine Learning Engineer. Passionate to continue the journey focusing on cutting edge technologies \
+                such as Data Science, Artificial Intelligence, and modern approaches in Autonomous Systems. Possess a diversified skillset and experienced as a \
+                Research Lead. Open to new opportunities and acquiring knowledge by working in larger cross-functional teams.</p>', unsafe_allow_html=True)
     st.write('----')
 
     st.write('')
     st.write('')
     st.write('')
     st.write('')
-    
+
     st.markdown('# Credentials')
     # st.write('------------')
 
