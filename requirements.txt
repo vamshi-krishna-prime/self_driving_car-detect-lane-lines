@@ -1,12 +1,7 @@
-html5lib=0.9999999
-imageio-ffmpeg=0.4.4
-ipython=7.13.0
-markdown=3.2.2
 matplotlib=2.2.2
 moviepy=1.0.3
 numpy=1.18.5
 opencv=4.1.0
 pandas=0.25.33
-python=3.6.13
 scikit-learn=0.20.1
 streamlit=0.84.2
