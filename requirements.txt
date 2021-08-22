@@ -1,6 +1,6 @@
 numpy==1.18.5
 streamlit==0.84.2
-pandas==0.25.33
+pandas==1.2.4
 matplotlib==2.2.2
 moviepy==1.0.3
 scikit-learn==0.20.1
