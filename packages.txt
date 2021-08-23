@@ -1,0 +1,11 @@
+opencv-python-headless
+opencv_python
+matplotlib
+moviepy
+streamlit
+pandas
+numpy
+ipython
+Pillow
+scikit_learn
+ffmpeg
