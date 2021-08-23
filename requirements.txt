@@ -1,5 +1,4 @@
-opencv-python-headless
-opencv_python==4.5.3.56
+opencv-python-headless==4.2.0.32
 matplotlib==2.2.2
 moviepy==1.0.3
 streamlit==0.84.2
