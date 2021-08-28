@@ -55,6 +55,10 @@ param_theta = np.pi/180
 param_threshold = 40
 param_min_line_length = 10
 param_max_line_gap = 70
+param_leftlane_slope_min = -10.0
+param_leftlane_slope_max = -0.5
+param_rightlane_slope_min = 0.5
+param_rightlane_slope_max = 10.0
 
 
 # Reset parameters to its default values
@@ -69,6 +73,8 @@ def _update_slider():
     st.session_state["slider_threshold"] = 40
     st.session_state["slider_min_line_length"] = 10
     st.session_state["slider_max_line_gap"] = 70
+    st.session_state["slider_leftlane_slopes"] = (-10.0, -0.5)
+    st.session_state["slider_rightlane_slopes"] = (0.5, 10.0)
 
 
 # Helper Functions
@@ -250,6 +256,11 @@ def draw_lines_extrapolated(img, lines, color=[9, 219, 44], thickness=5):
     global l_x1
     global l_x2
     global l_x3
+
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
     
     rc = np.array([])
     lc = np.array([])
@@ -269,12 +280,12 @@ def draw_lines_extrapolated(img, lines, color=[9, 219, 44], thickness=5):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > param_rightlane_slope_min and slope < param_rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 rc = np.append(rc, center)
                 rx = np.append(rx, [x1,x2])
                 ry = np.append(ry, [y1,y2])
                 
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < param_leftlane_slope_max and slope > param_leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 lc = np.append(lc, center)
                 lx = np.append(lx, [x1,x2])
                 ly = np.append(ly, [y1,y2])
@@ -289,7 +300,7 @@ def draw_lines_extrapolated(img, lines, color=[9, 219, 44], thickness=5):
         rx = rx.reshape(-1,1)
         reg.fit(rx, ry)
         r_slope, r_intercept = reg.coef_[0], reg.intercept_
-        if r_slope > 0.5 and r_slope < 10:
+        if r_slope > param_rightlane_slope_min and r_slope < param_rightlane_slope_max:
             r_x1 = (y1 - r_intercept) / r_slope
             r_x2 = (y2 - r_intercept) / r_slope
             r_x3 = ((y2 + (imshape[0]/50))- r_intercept) / r_slope
@@ -304,7 +315,7 @@ def draw_lines_extrapolated(img, lines, color=[9, 219, 44], thickness=5):
         lx = lx.reshape(-1,1)
         reg.fit(lx, ly)
         l_slope, l_intercept = reg.coef_[0], reg.intercept_
-        if l_slope < -0.5 and l_slope > -10:
+        if l_slope < param_leftlane_slope_max  and l_slope > param_leftlane_slope_min:
             l_x1 = (y1 - l_intercept) / l_slope
             l_x2 = (y2 - l_intercept) / l_slope
             l_x3 = ((y2 + (imshape[0]/50))- l_intercept) / l_slope
@@ -398,6 +409,11 @@ def draw_lines_extrapolated_stable(img, lines, color=[9, 219, 44], thickness=5):
     global l_x2
     global l_x3
     
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
+    
     rc = np.array([])
     lc = np.array([])
     rx = np.array([])
@@ -416,12 +432,12 @@ def draw_lines_extrapolated_stable(img, lines, color=[9, 219, 44], thickness=5):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > param_rightlane_slope_min and slope < param_rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 rc = np.append(rc, center)
                 rx = np.append(rx, [x1,x2])
                 ry = np.append(ry, [y1,y2])
                 
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < param_leftlane_slope_max and slope > param_leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 lc = np.append(lc, center)
                 lx = np.append(lx, [x1,x2])
                 ly = np.append(ly, [y1,y2])
@@ -436,7 +452,7 @@ def draw_lines_extrapolated_stable(img, lines, color=[9, 219, 44], thickness=5):
         rx = rx.reshape(-1,1)
         reg.fit(rx, ry)
         r_slope, r_intercept = reg.coef_[0], reg.intercept_
-        if r_slope > 0.5 and r_slope < 10:
+        if r_slope > param_rightlane_slope_min and r_slope < param_rightlane_slope_max:
             r_x1_new = (y1 - r_intercept) / r_slope
             r_x2_new = (y2 - r_intercept) / r_slope
             r_x3_new = ((y2 + (imshape[0]/50)) - r_intercept) / r_slope
@@ -445,7 +461,7 @@ def draw_lines_extrapolated_stable(img, lines, color=[9, 219, 44], thickness=5):
                 learning_rate = 1
             else:
                 learning_rate = 0.2
-                
+
             r_x1 = (learning_rate * r_x1_new) + ((1 - learning_rate) * r_x1)
             r_x2 = (learning_rate * r_x2_new) + ((1 - learning_rate) * r_x2)
             r_x3 = (learning_rate * r_x3_new) + ((1 - learning_rate) * r_x3)
@@ -460,7 +476,7 @@ def draw_lines_extrapolated_stable(img, lines, color=[9, 219, 44], thickness=5):
         lx = lx.reshape(-1,1)
         reg.fit(lx, ly)
         l_slope, l_intercept = reg.coef_[0], reg.intercept_
-        if l_slope < -0.5 and l_slope > -10:
+        if l_slope < param_leftlane_slope_max and l_slope > param_leftlane_slope_min:
             l_x1_new = (y1 - l_intercept) / l_slope
             l_x2_new = (y2 - l_intercept) / l_slope
             l_x3_new = ((y2 + (imshape[0]/50)) - l_intercept) / l_slope
@@ -572,7 +588,12 @@ def draw_lines_fill(img, lines, color=[9, 219, 44], thickness=5):
     global l_x1
     global l_x2
     global l_x3
-    
+
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
+
     rc = np.array([])
     lc = np.array([])
     rx = np.array([])
@@ -591,12 +612,12 @@ def draw_lines_fill(img, lines, color=[9, 219, 44], thickness=5):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > param_rightlane_slope_min and slope < param_rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 rc = np.append(rc, center)
                 rx = np.append(rx, [x1,x2])
                 ry = np.append(ry, [y1,y2])
                 
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < param_leftlane_slope_max and slope > param_leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 lc = np.append(lc, center)
                 lx = np.append(lx, [x1,x2])
                 ly = np.append(ly, [y1,y2])
@@ -611,7 +632,7 @@ def draw_lines_fill(img, lines, color=[9, 219, 44], thickness=5):
         rx = rx.reshape(-1,1)
         reg.fit(rx, ry)
         r_slope, r_intercept = reg.coef_[0], reg.intercept_
-        if r_slope > 0.5 and r_slope < 10:
+        if r_slope > param_rightlane_slope_min and r_slope < param_rightlane_slope_max:
             r_x1_new = (y1 - r_intercept) / r_slope
             r_x2_new = (y2 - r_intercept) / r_slope
             r_x3_new = ((y2 + (imshape[0]/50)) - r_intercept) / r_slope
@@ -630,7 +651,7 @@ def draw_lines_fill(img, lines, color=[9, 219, 44], thickness=5):
         lx = lx.reshape(-1,1)
         reg.fit(lx, ly)
         l_slope, l_intercept = reg.coef_[0], reg.intercept_
-        if l_slope < -0.5 and l_slope > -10:
+        if l_slope < param_leftlane_slope_max and l_slope > param_leftlane_slope_min:
             l_x1_new = (y1 - l_intercept) / l_slope
             l_x2_new = (y2 - l_intercept) / l_slope
             l_x3_new = ((y2 + (imshape[0]/50)) - l_intercept) / l_slope
@@ -783,8 +804,16 @@ def project_explanation(state):
 
 
 def parameter_experiment(state):
-    # st.title("Experiment with parameters values")
-    url = "Experiment with Parameters values"
+    global param_kernel_size
+    global param_low_threshold
+    global param_high_threshold
+    global param_rho
+    global param_theta
+    global param_threshold
+    global param_min_line_length
+    global param_max_line_gap
+    # st.title("Experiment with parameter value")
+    url = "Experiment with Parameter value"
     st.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-size:34px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{url}</p>', unsafe_allow_html=True)
     # st.write('------')
 
@@ -808,7 +837,15 @@ def parameter_experiment(state):
 
 
     # select filter
-    filters = ['Original', 'Grayscale', 'Blur', 'Canny Edge Detection', 'Masked Edges', 'Hough Canny', 'Hough Original']
+    filters = ['Original', 
+               'Grayscale', 
+               'Blur', 
+               'Canny Edge Detection', 
+               'Masked Edges', 
+               'Hough Canny', 
+               'Hough Original', 
+               'Tune Slope Canny', 
+               'Tune Slope Original']
     state.filter = col2.selectbox('select filter', filters, 0)
     image1 = np.array(image1.convert('RGB'))
     if state.filter == 'Original':
@@ -874,15 +911,12 @@ def parameter_experiment(state):
         original_image = image1.copy()
         gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
         state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2, key="slider_kernel_size")
-        global param_kernel_size
         param_kernel_size = state.kernel_size
         blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
         state.threshold_values = st.slider('Select the threshold range for canny edge \
                                             detection: (recomended: 50, 150)', 0, 255, (50, 150), key="slider_threshold_values")
         state.low_threshold = state.threshold_values[0]
         state.high_threshold = state.threshold_values[1]
-        global param_low_threshold
-        global param_high_threshold
         param_low_threshold = state.low_threshold
         param_high_threshold = state.high_threshold
         canny_image = cv2.Canny(blur_image, state.low_threshold, state.high_threshold)
@@ -926,12 +960,6 @@ def parameter_experiment(state):
         state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
         # maximum gap in pixels between connectable line segments
         state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
-        
-        global param_rho
-        global param_theta
-        global param_threshold
-        global param_min_line_length
-        global param_max_line_gap
 
         param_rho = state.rho
         param_theta = state.theta
@@ -962,6 +990,121 @@ def parameter_experiment(state):
             col2.image(hough_canny, use_column_width=True)
         if state.filter == 'Hough Original':
             col2.image(hough_original, use_column_width=True)
+    elif state.filter == 'Tune Slope Canny' or state.filter == 'Tune Slope Original':
+        original_image = image1.copy()
+        gray_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+        state.kernel_size = st.slider("Select blur level: (recomemded: 5)", 1, 11, 5, 2, key="slider_kernel_size")
+        param_kernel_size = state.kernel_size
+        blur_image = cv2.GaussianBlur(gray_image, (state.kernel_size, state.kernel_size), 0)
+        state.threshold_values = st.slider('Select the threshold range for canny edge \
+                                            detection: (recomended: 50, 150)', 0, 255, (50, 150), key="slider_threshold_values")
+        state.low_threshold = state.threshold_values[0]
+        state.high_threshold = state.threshold_values[1]
+        param_low_threshold = state.low_threshold
+        param_high_threshold = state.high_threshold
+        canny_image = cv2.Canny(blur_image, state.low_threshold, state.high_threshold)
+        # Next we'll create a masked edges image using cv2.fillPoly()
+        mask = np.zeros_like(canny_image)   
+        #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
+        if len(canny_image.shape) > 2:
+            channel_count = canny_image.shape[2]  # i.e. 3 or 4 depending on your image
+            ignore_mask_color = (255,) * channel_count
+        else:
+            ignore_mask_color = 255
+        # This time we are defining a four sided polygon to mask
+        imshape = original_image.shape
+        vertices = np.array([[(.55*imshape[1], .60*imshape[0]), 
+                            (.45*imshape[1], .60*imshape[0]),  
+                            (.15*imshape[1], .90*imshape[0]), 
+                            (.30*imshape[1], .90*imshape[0]), 
+                            (.50*imshape[1], .60*imshape[0]),
+                            (.70*imshape[1], .90*imshape[0]),
+                            (.85*imshape[1], .90*imshape[0]),
+                            (.55*imshape[1], .60*imshape[0])]], dtype=np.int32)
+        cv2.fillPoly(mask, vertices, ignore_mask_color)
+        mask_image = cv2.bitwise_and(canny_image, mask)
+        stacked_canny = np.dstack((canny_image, canny_image, canny_image)) 
+        # identify the region of interest
+        isClosed = True
+        color = (0, 195, 255)
+        thickness = 2
+        vertices = vertices.reshape((-1, 1, 2))
+        cv2.polylines(stacked_canny, [vertices], isClosed, color, thickness)
+        # Define the Hough transform parameters
+        # Make a blank the same size as our image to draw on
+        # distance resolution in pixels of the Hough grid
+        state.rho = st.slider("Select rho value for resolution: (recomemded: 1 pixel)", 1, 5, 1, 1, key="slider_rho")
+        # angular resolution in radians of the Hough grid
+        state.angle = st.slider("Select angle for theta: (recomemded: 180)", 1, 360, 180, 1, key="slider_angle")
+        state.theta = np.pi/state.angle
+        # minimum number of votes (intersections in Hough grid cell)
+        state.threshold = st.slider("Select minimum number of votes to form a line: (recomemded: 40)", 1, 100, 40, 1, key="slider_threshold")
+        # minimum number of pixels making up a line
+        state.min_line_length = st.slider("Select minimum number of pixels making up a line: (recomemded: 10)", 1, 100, 10, 1, key="slider_min_line_length")
+        # maximum gap in pixels between connectable line segments
+        state.max_line_gap = st.slider("Select maximum gap in pixels between connectable line segments: (recomemded: 70)", 1, 100, 70, 1, key="slider_max_line_gap")
+
+        param_rho = state.rho
+        param_theta = state.theta
+        param_threshold = state.threshold
+        param_min_line_length = state.min_line_length
+        param_max_line_gap = state.max_line_gap
+
+        line_image_reduced = np.copy(original_image)*0 # creating a blank to draw lines on
+
+        # Run Hough on edge detected image
+        # Output "lines" is an array containing endpoints of detected line segments
+        lines = cv2.HoughLinesP(mask_image, state.rho, state.theta, state.threshold, np.array([]),
+                                state.min_line_length, state.max_line_gap)
+
+        # adjust the extremities of the slopes for left and right lanes
+        state.leftlane_slope_range = st.slider('Select the slope range for left lane : \
+                                                (recomended: -10, -0.5)', -10.0, 10.0, (-10.0, -0.5), 0.5, key="slider_leftlane_slopes")
+        state.leftlane_slope_min = state.leftlane_slope_range[0]
+        state.leftlane_slope_max = state.leftlane_slope_range[1]
+
+        state.rightlane_slope_range = st.slider('Select the slope range for right lane : \
+                                                (recomended: 0.5, 10)', -10.0, 10.0, (0.5, 10.0), 0.5, key="slider_rightlane_slopes")
+        state.rightlane_slope_min = state.rightlane_slope_range[0]
+        state.rightlane_slope_max = state.rightlane_slope_range[1]
+
+        global param_leftlane_slope_min
+        global param_leftlane_slope_max
+        global param_rightlane_slope_min
+        global param_rightlane_slope_max
+        
+        param_leftlane_slope_min = state.leftlane_slope_min
+        param_leftlane_slope_max = state.leftlane_slope_max
+        param_rightlane_slope_min = state.rightlane_slope_min
+        param_rightlane_slope_max = state.rightlane_slope_max
+
+        # Iterate over the output "lines" and draw lines on a blank image
+        for line in lines:
+            for x1,y1,x2,y2 in line:
+                try:
+                    slope = (y2-y1)/(x2-x1)
+                except ZeroDivisionError:
+                    slope = np.inf            
+                
+                if slope > state.rightlane_slope_min and slope < state.rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+                    # print('Right Lane with slope:  ',slope)
+                    cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
+                elif slope < state.leftlane_slope_max and slope > state.leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+                    # print('Left Lane with slope : ',slope)
+                    cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
+        
+
+        # Create a "color" binary image to combine with line image
+        stacked_mask = np.dstack((mask_image, mask_image, mask_image)) 
+
+        # Draw the lines on the edge image
+        tune_slope_canny = cv2.addWeighted(stacked_mask, 1, line_image_reduced, 0.6, 0)
+        tune_slope_original = cv2.addWeighted(original_image, 1, line_image_reduced, 0.6, 0)
+        
+        if state.filter == 'Tune Slope Canny':
+            col2.image(tune_slope_canny, use_column_width=True)
+        if state.filter == 'Tune Slope Original':
+            col2.image(tune_slope_original, use_column_width=True)
 
 
 
@@ -1467,6 +1610,27 @@ def extrapolate_lines(state):
     lines = cv2.HoughLinesP(mask_image, state.rho, state.theta, state.threshold, np.array([]),
                             state.min_line_length, state.max_line_gap)
 
+    # adjust the extremities of the slopes for left and right lanes
+    state.leftlane_slope_range = st.slider('Select the slope range for left lane : \
+                                            (recomended: -10, -0.5)', -10.0, 10.0, (-10.0, -0.5), 0.5, key="slider_leftlane_slopes")
+    state.leftlane_slope_min = state.leftlane_slope_range[0]
+    state.leftlane_slope_max = state.leftlane_slope_range[1]
+
+    state.rightlane_slope_range = st.slider('Select the slope range for right lane : \
+                                            (recomended: 0.5, 10)', -10.0, 10.0, (0.5, 10.0), 0.5, key="slider_rightlane_slopes")
+    state.rightlane_slope_min = state.rightlane_slope_range[0]
+    state.rightlane_slope_max = state.rightlane_slope_range[1]
+
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
+    
+    param_leftlane_slope_min = state.leftlane_slope_min
+    param_leftlane_slope_max = state.leftlane_slope_max
+    param_rightlane_slope_min = state.rightlane_slope_min
+    param_rightlane_slope_max = state.rightlane_slope_max
+
     # Iterate over the output "lines" and draw lines on a blank image
     for line in lines:
         for x1,y1,x2,y2 in line:
@@ -1480,10 +1644,10 @@ def extrapolate_lines(state):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > param_rightlane_slope_min and slope < param_rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 # print('Right Lane with slope:  ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < state.leftlane_slope_max and slope > state.leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 # print('Left Lane with slope : ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
     
@@ -1511,7 +1675,11 @@ def extrapolate_lines(state):
         'theta' : state.theta,
         'threshold' : state.threshold,
         'min_line_length' : state.min_line_length,
-        'max_line_gap' : state.max_line_gap
+        'max_line_gap' : state.max_line_gap,
+        'leftlane_slope_min' : state.leftlane_slope_min,
+        'leftlane_slope_max' : state.leftlane_slope_max,
+        'rightlane_slope_min' : state.rightlane_slope_min,
+        'rightlane_slope_max' : state.rightlane_slope_max
 
     }
 
@@ -1524,9 +1692,13 @@ def extrapolate_lines(state):
                                             param_theta,
                                             param_threshold,
                                             param_min_line_length,
-                                            param_max_line_gap])
+                                            param_max_line_gap,
+                                            param_leftlane_slope_min,
+                                            param_leftlane_slope_max,
+                                            param_rightlane_slope_min,
+                                            param_rightlane_slope_max])
 
-    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70])
+    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70, -10.0, -0.5, 0.5, 10.0])
     state_df.drop(columns = ['value'], inplace=True)
 
     st.write(state_df)
@@ -1542,6 +1714,10 @@ def extrapolate_lines(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
+        param_leftlane_slope_min = -10.0
+        param_leftlane_slope_max = -0.5
+        param_rightlane_slope_min = 0.5
+        param_rightlane_slope_max = 10.0
 
     st.markdown(' ')
     st.markdown(' ')
@@ -1779,6 +1955,10 @@ def stabilize_lines(state):
     global param_threshold
     global param_min_line_length
     global param_max_line_gap
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
 
 
 
@@ -1790,7 +1970,11 @@ def stabilize_lines(state):
         'theta' : state.theta,
         'threshold' : state.threshold,
         'min_line_length' : state.min_line_length,
-        'max_line_gap' : state.max_line_gap
+        'max_line_gap' : state.max_line_gap,
+        'leftlane_slope_min' : state.leftlane_slope_min,
+        'leftlane_slope_max' : state.leftlane_slope_max,
+        'rightlane_slope_min' : state.rightlane_slope_min,
+        'rightlane_slope_max' : state.rightlane_slope_max
 
     }
 
@@ -1809,6 +1993,10 @@ def stabilize_lines(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
+        param_leftlane_slope_min = -10.0
+        param_leftlane_slope_max = -0.5
+        param_rightlane_slope_min = 0.5
+        param_rightlane_slope_max = 10.0
     else:
         # st.write('Message: No NULL values detected')
         param_kernel_size = state.kernel_size
@@ -1819,6 +2007,10 @@ def stabilize_lines(state):
         param_threshold = state.threshold
         param_min_line_length = state.min_line_length
         param_max_line_gap = state.max_line_gap
+        param_leftlane_slope_min = state.leftlane_slope_min
+        param_leftlane_slope_max = state.leftlane_slope_max
+        param_rightlane_slope_min = state.rightlane_slope_min
+        param_rightlane_slope_max = state.rightlane_slope_max
 
     state_df['selected_value'] = pd.Series([param_kernel_size,
                                             param_low_threshold,
@@ -1827,9 +2019,13 @@ def stabilize_lines(state):
                                             param_theta,
                                             param_threshold,
                                             param_min_line_length,
-                                            param_max_line_gap])
+                                            param_max_line_gap,
+                                            param_leftlane_slope_min,
+                                            param_leftlane_slope_max,
+                                            param_rightlane_slope_min,
+                                            param_rightlane_slope_max])
 
-    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70])
+    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70, -10.0, -0.5, 0.5, 10.0])
     state_df.drop(columns = ['value'], inplace=True)
 
     st.write(state_df)
@@ -1845,6 +2041,10 @@ def stabilize_lines(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
+        param_leftlane_slope_min = -10.0
+        param_leftlane_slope_max = -0.5
+        param_rightlane_slope_min = 0.5
+        param_rightlane_slope_max = 10.0
             
     st.write(' ')
     st.write(' ')
@@ -2090,6 +2290,27 @@ def polyfill_lines(state):
     lines = cv2.HoughLinesP(mask_image, state.rho, state.theta, state.threshold, np.array([]),
                             state.min_line_length, state.max_line_gap)
 
+    # adjust the extremities of the slopes for left and right lanes
+    state.leftlane_slope_range = st.slider('Select the slope range for left lane : \
+                                            (recomended: -10, -0.5)', -10.0, 10.0, (-10.0, -0.5), 0.5, key="slider_leftlane_slopes")
+    state.leftlane_slope_min = state.leftlane_slope_range[0]
+    state.leftlane_slope_max = state.leftlane_slope_range[1]
+
+    state.rightlane_slope_range = st.slider('Select the slope range for right lane : \
+                                            (recomended: 0.5, 10)', -10.0, 10.0, (0.5, 10.0), 0.5, key="slider_rightlane_slopes")
+    state.rightlane_slope_min = state.rightlane_slope_range[0]
+    state.rightlane_slope_max = state.rightlane_slope_range[1]
+
+    global param_leftlane_slope_min
+    global param_leftlane_slope_max
+    global param_rightlane_slope_min
+    global param_rightlane_slope_max
+    
+    param_leftlane_slope_min = state.leftlane_slope_min
+    param_leftlane_slope_max = state.leftlane_slope_max
+    param_rightlane_slope_min = state.rightlane_slope_min
+    param_rightlane_slope_max = state.rightlane_slope_max
+
     # Iterate over the output "lines" and draw lines on a blank image
     for line in lines:
         for x1,y1,x2,y2 in line:
@@ -2103,10 +2324,10 @@ def polyfill_lines(state):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > state.rightlane_slope_min and slope < state.rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 # print('Right Lane with slope:  ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < state.leftlane_slope_max and slope > state.leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 # print('Left Lane with slope : ',slope)
                 cv2.line(line_image_reduced,(x1,y1),(x2,y2),(255,0,0),10)
     
@@ -2142,12 +2363,12 @@ def polyfill_lines(state):
             except ZeroDivisionError:
                 slope = np.inf            
             
-            if slope > 0.5 and slope < 10 and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
+            if slope > state.rightlane_slope_min and slope < state.rightlane_slope_max and x1 > (.50*imshape[1]) and x2 > (.50*imshape[1]):
                 rc = np.append(rc, center)
                 rx = np.append(rx, [x1,x2])
                 ry = np.append(ry, [y1,y2])
                 
-            elif slope < -0.5 and slope > -10 and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
+            elif slope < state.leftlane_slope_max and slope > state.leftlane_slope_min and x1 < (.50*imshape[1]) and x2 < (.50*imshape[1]):
                 lc = np.append(lc, center)
                 lx = np.append(lx, [x1,x2])
                 ly = np.append(ly, [y1,y2])
@@ -2162,7 +2383,7 @@ def polyfill_lines(state):
         rx = rx.reshape(-1,1)
         reg.fit(rx, ry)
         r_slope, r_intercept = reg.coef_[0], reg.intercept_
-        if r_slope > 0.5 and r_slope < 10:
+        if r_slope > state.rightlane_slope_min and r_slope < state.rightlane_slope_max:
             r_x1_new = (y1 - r_intercept) / r_slope
             r_x2_new = (y2 - r_intercept) / r_slope
             r_x3_new = ((y2 + (imshape[0]/50)) - r_intercept) / r_slope
@@ -2181,7 +2402,7 @@ def polyfill_lines(state):
         lx = lx.reshape(-1,1)
         reg.fit(lx, ly)
         l_slope, l_intercept = reg.coef_[0], reg.intercept_
-        if l_slope < -0.5 and l_slope > -10:
+        if l_slope < state.leftlane_slope_max and l_slope > state.leftlane_slope_min:
             l_x1_new = (y1 - l_intercept) / l_slope
             l_x2_new = (y2 - l_intercept) / l_slope
             l_x3_new = ((y2 + (imshape[0]/50)) - l_intercept) / l_slope
@@ -2228,7 +2449,11 @@ def polyfill_lines(state):
         'theta' : state.theta,
         'threshold' : state.threshold,
         'min_line_length' : state.min_line_length,
-        'max_line_gap' : state.max_line_gap
+        'max_line_gap' : state.max_line_gap,
+        'leftlane_slope_min' : state.leftlane_slope_min,
+        'leftlane_slope_max' : state.leftlane_slope_max,
+        'rightlane_slope_min' : state.rightlane_slope_min,
+        'rightlane_slope_max' : state.rightlane_slope_max
 
     }
 
@@ -2247,6 +2472,10 @@ def polyfill_lines(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
+        param_leftlane_slope_min = -10.0
+        param_leftlane_slope_max = -0.5
+        param_rightlane_slope_min = 0.5
+        param_rightlane_slope_max = 10.0
     else:
         # st.write('Message: No NULL values detected')
         param_kernel_size = state.kernel_size
@@ -2257,6 +2486,10 @@ def polyfill_lines(state):
         param_threshold = state.threshold
         param_min_line_length = state.min_line_length
         param_max_line_gap = state.max_line_gap
+        param_leftlane_slope_min = state.leftlane_slope_min
+        param_leftlane_slope_max = state.leftlane_slope_max
+        param_rightlane_slope_min = state.rightlane_slope_min
+        param_rightlane_slope_max = state.rightlane_slope_max
 
     state_df['selected_value'] = pd.Series([param_kernel_size,
                                             param_low_threshold,
@@ -2265,9 +2498,13 @@ def polyfill_lines(state):
                                             param_theta,
                                             param_threshold,
                                             param_min_line_length,
-                                            param_max_line_gap])
+                                            param_max_line_gap,
+                                            param_leftlane_slope_min,
+                                            param_leftlane_slope_max,
+                                            param_rightlane_slope_min,
+                                            param_rightlane_slope_max])
 
-    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70])
+    state_df['recommended_value'] = pd.Series([5, 50, 150, 1, np.pi/180, 40, 10, 70, -10.0, -0.5, 0.5, 10.0])
     state_df.drop(columns = ['value'], inplace=True)
 
     st.write(state_df)
@@ -2283,6 +2520,10 @@ def polyfill_lines(state):
         param_threshold = 40
         param_min_line_length = 10
         param_max_line_gap = 70
+        param_leftlane_slope_min = -10.0
+        param_leftlane_slope_max = -0.5
+        param_rightlane_slope_min = 0.5
+        param_rightlane_slope_max = 10.0
 
 
     st.markdown(' ')
