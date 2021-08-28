@@ -153,7 +153,7 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     return line_img
 
 
-def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
+def weighted_img(img, initial_img, alpha=0.8, beta=1., gamma=0.):
     """
     `img` is the output of the hough_lines(), An image with lines drawn on it.
     Should be a blank image (all black) with lines drawn on it.
@@ -165,7 +165,7 @@ def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
     initial_img * α + img * β + γ
     NOTE: initial_img and img must be the same shape!
     """
-    return cv2.addWeighted(initial_img, α, img, β, γ)
+    return cv2.addWeighted(initial_img, alpha, img, beta, gamma)
 
 
 def process_image(img):
@@ -210,7 +210,7 @@ def process_image(img):
                              min_line_len = param_min_line_length, max_line_gap = param_max_line_gap)
  
     # perform weighted addition of line_image and original image to potray lane markings
-    image_lanes = weighted_img(line_image, image, α=1.0, β=1.0, γ=0.)
+    image_lanes = weighted_img(line_image, image, alpha=1.0, beta=1.0, gamma=0.)
     result = image_lanes
     
     # return the final image where lines are drawn on lanes
@@ -371,7 +371,7 @@ def process_image_extrapolated(img):
                                           min_line_len = param_min_line_length, max_line_gap = param_max_line_gap)
  
     # perform weighted addition of line_image and original image to potray lane markings
-    image_lanes = weighted_img(line_image, image, α=1.0, β=1.0, γ=0.)
+    image_lanes = weighted_img(line_image, image, alpha=1.0, beta=1.0, gamma=0.)
     result = image_lanes
     
     # return the final image where lines are drawn on lanes
@@ -538,7 +538,7 @@ def process_image_extrapolated_stable(img):
                                                  min_line_len = param_min_line_length, max_line_gap = param_max_line_gap)
  
     # perform weighted addition of line_image and original image to potray lane markings
-    image_lanes = weighted_img(line_image, image, α=1.0, β=1.0, γ=0.)
+    image_lanes = weighted_img(line_image, image, alpha=1.0, beta=1.0, gamma=0.)
     result = image_lanes
     
     # return the final image where lines are drawn on lanes
@@ -704,7 +704,7 @@ def process_image_fill(img):
                                   min_line_len = param_min_line_length, max_line_gap = param_max_line_gap)
  
     # perform weighted addition of line_image and original image to potray lane markings
-    image_lanes = weighted_img(line_image, image, α=1.0, β=0.4, γ=0.)
+    image_lanes = weighted_img(line_image, image, alpha=1.0, beta=0.4, gamma=0.)
     result = image_lanes
     
     # return the final image where lines are drawn on lanes
@@ -724,7 +724,10 @@ def main():
         "Credentials": credentials
     }
 
-    st.sidebar.title(":bookmark_tabs: Navigation")
+    st.sidebar.markdown('<img src="https://s3-us-west-1.amazonaws.com/udacity-content/rebrand/svg/logo.min.svg" width="150" alt="Udacity logo">', unsafe_allow_html=True)
+    # st.sidebar.title(":bookmark_tabs: Navigation")
+    st.sidebar.write('')
+    
     
     # Display the selected page with the session state
     # if state.clicked1 or state.clicked2 or state.clicked3:
@@ -732,7 +735,7 @@ def main():
     # else:
         # page = st.sidebar.radio("Select your page", tuple(pages.keys()),)
 
-    page = st.sidebar.radio("Select your page", tuple(pages.keys()),)
+    page = st.sidebar.radio("Select the page:", tuple(pages.keys()),)
     pages[page](state)
 
     # Mandatory to avoid rollbacks with widgets, must be called at the end of your app
@@ -1290,9 +1293,8 @@ def hough_lines_page(state):
         errorholder.markdown('> `Wait for the process to finish. Refresh the web application if there is an error!`')
 
         placeholder = st.empty()
-        gif_path = 'images/3.gif'
-        placeholder.image(gif_path)
-        placeholder.image('images/34.gif', use_column_width=True)
+        gif_path = 'images/34.gif'
+        placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
         ## To do so add .subclip(start_second,end_second) to the end of the line below
@@ -1498,7 +1500,7 @@ def extrapolate_lines(state):
     hough_extrapolated_image = hough_lines_extrapolated(mask_image, state.rho, state.theta, state.threshold,
                                                         state.min_line_length, state.max_line_gap)
     # perform weighted addition of line_image and original image to potray lane markings
-    extrapolated_image = weighted_img(hough_extrapolated_image, original_image, α=1, β=0.6, γ=0.)
+    extrapolated_image = weighted_img(hough_extrapolated_image, original_image, alpha=1, beta=0.6, gamma=0.)
 
     # display parameter values in a table
     state_dict = {
@@ -1715,7 +1717,7 @@ def extrapolate_lines(state):
 
         placeholder = st.empty()
         gif_path = 'images/26.gif'
-        placeholder.image(gif_path)
+        placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
         ## To do so add .subclip(start_second,end_second) to the end of the line below
@@ -1909,7 +1911,7 @@ def stabilize_lines(state):
 
         placeholder = st.empty()
         gif_path = 'images/23.gif'
-        placeholder.image(gif_path)
+        placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
         ## To do so add .subclip(start_second,end_second) to the end of the line below
@@ -2209,13 +2211,13 @@ def polyfill_lines(state):
     hough_extrapolated_image = hough_lines_extrapolated(mask_image, state.rho, state.theta, state.threshold,
                                                         state.min_line_length, state.max_line_gap)
     # perform weighted addition of line_image and original image to potray lane markings
-    extrapolated_image = weighted_img(hough_extrapolated_image, original_image, α=1, β=0.6, γ=0.)
+    extrapolated_image = weighted_img(hough_extrapolated_image, original_image, alpha=1, beta=0.6, gamma=0.)
    
     # polyfill hough lines
     hough_polyfill_image = hough_lines_fill(mask_image, state.rho, state.theta, state.threshold,
                                                         state.min_line_length, state.max_line_gap)
     # perform weighted addition of line_image and original image to potray lane markings
-    polyfill_image = weighted_img(hough_polyfill_image, original_image, α=1, β=0.6, γ=0.)
+    polyfill_image = weighted_img(hough_polyfill_image, original_image, alpha=1, beta=0.6, gamma=0.)
 
 
     state_dict = {
@@ -2431,7 +2433,7 @@ def polyfill_lines(state):
 
         placeholder = st.empty()
         gif_path = 'images/19.gif'
-        placeholder.image(gif_path)
+        placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
         ## To do so add .subclip(start_second,end_second) to the end of the line below
