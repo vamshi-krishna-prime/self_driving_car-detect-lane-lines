@@ -1005,7 +1005,7 @@ def hough_lines_page(state):
     test_images = os.listdir("test_images/")
     test_images_challenge = os.listdir("test_images_challenge/")
     test_images.extend(test_images_challenge)
-    state.test_image = st.selectbox('select image', test_images)
+    state.test_image = st.selectbox('select image', test_images, 4)
     root_directory = "test_images"
     root_directory_challenge = "test_images_challenge"
     image_path = state.test_image
@@ -1293,7 +1293,7 @@ def hough_lines_page(state):
         errorholder.markdown('> `Wait for the process to finish. Refresh the web application if there is an error!`')
 
         placeholder = st.empty()
-        gif_path = 'images/34.gif'
+        gif_path = 'images/gif_hough_lines.gif'
         placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
@@ -1381,7 +1381,7 @@ def extrapolate_lines(state):
     test_images = os.listdir("test_images/")
     test_images_challenge = os.listdir("test_images_challenge/")
     test_images.extend(test_images_challenge)
-    state.test_image = st.selectbox('select image', test_images, 6)
+    state.test_image = st.selectbox('select image', test_images, 1)
     root_directory = "test_images"
     root_directory_challenge = "test_images_challenge"
     image_path = state.test_image
@@ -1657,7 +1657,7 @@ def extrapolate_lines(state):
     
     # select video
     test_video = os.listdir("test_videos/")
-    state.test_video = st.selectbox('select video', test_video, 2)
+    state.test_video = st.selectbox('select video', test_video, 1)
     video_root_directory = "test_videos"
     video_name = state.test_video
     video_path = os.path.join(video_root_directory, video_name)
@@ -1716,7 +1716,7 @@ def extrapolate_lines(state):
         errorholder.markdown('> `Wait for the process to finish. Refresh the web application if there is an error!`')
 
         placeholder = st.empty()
-        gif_path = 'images/26.gif'
+        gif_path = 'images/gif_extrapolate_lines.gif'
         placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
@@ -1859,7 +1859,7 @@ def stabilize_lines(state):
 
     # select video
     test_video = os.listdir("test_videos/")
-    state.test_video = st.selectbox('select video', test_video, 2)
+    state.test_video = st.selectbox('select video', test_video, 0)
     video_root_directory = "test_videos"
     video_name = state.test_video
     video_path = os.path.join(video_root_directory, video_name)
@@ -1910,7 +1910,7 @@ def stabilize_lines(state):
         errorholder.markdown('> `Wait for the process to finish. Refresh the web application if there is an error!`')
 
         placeholder = st.empty()
-        gif_path = 'images/23.gif'
+        gif_path = 'images/gif_stabilize_lines.gif'
         placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
@@ -1959,7 +1959,7 @@ def stabilize_lines(state):
 
 def polyfill_lines(state):
     # st.title("Fill Hough Lines Pipeline")
-    text1 = "Fill Area inside Hough Lines Pipeline"
+    text1 = "Polyfill inside Stabilize Lines Pipeline"
     st.markdown(f'<p style="background-color:#0686c2;color:#2b2b2b;font-size:34px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text1}</p>', unsafe_allow_html=True)
     st.write('----')
     st.markdown('<p style="text-align: justify;">Fill the area between the extrapolated hough lines \
@@ -1995,7 +1995,7 @@ def polyfill_lines(state):
     # col5.write(':: Hough Lines Pipeline ::')
     # col6.markdown('----')
 
-    text2 = ':: Polyfill Hough Lines Pipeline on Images ::'
+    text2 = ':: Fill Area inside Stabilized Lines on Images ::'
     st.markdown(f'<p style="background-color:#32a894;color:#2b2b2b;font-size:24px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text2}</p>', unsafe_allow_html=True)
     st.write('----')
 
@@ -2003,7 +2003,7 @@ def polyfill_lines(state):
     test_images = os.listdir("test_images/")
     test_images_challenge = os.listdir("test_images_challenge/")
     test_images.extend(test_images_challenge)
-    state.test_image = st.selectbox('select image', test_images, 0)
+    state.test_image = st.selectbox('select image', test_images, 9)
     root_directory = "test_images"
     root_directory_challenge = "test_images_challenge"
     image_path = state.test_image
@@ -2375,13 +2375,13 @@ def polyfill_lines(state):
     st.write(' ')
     st.write(' ')
 
-    text3 = ':: Fill Area inside Hough Lines Pipeline on Video Stream ::'
+    text3 = ':: Fill Area inside Stabilized Lines on Video Stream ::'
     st.markdown(f'<p style="background-color:#32a894;color:#2b2b2b;font-size:24px;font-weight:bold;font-family:sans-serif;border-radius:2%;text-align:center">{text3}</p>', unsafe_allow_html=True)
     st.write('----')
 
     # select video
     test_video = os.listdir("test_videos/")
-    state.test_video = st.selectbox('select video', test_video, 2)
+    state.test_video = st.selectbox('select video', test_video, 0)
     video_root_directory = "test_videos"
     video_name = state.test_video
     video_path = os.path.join(video_root_directory, video_name)
@@ -2432,7 +2432,7 @@ def polyfill_lines(state):
         errorholder.markdown('> `Wait for the process to finish. Refresh the web application if there is an error!`')
 
         placeholder = st.empty()
-        gif_path = 'images/19.gif'
+        gif_path = 'images/gif_polyfill.gif'
         placeholder.image(gif_path, use_column_width=True)
 
         ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
